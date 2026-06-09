@@ -2,5 +2,11 @@
 .env
 **/.env
 
+# Compilados de .NET
+bin/
+obj/
+**/bin/
+**/obj/
+
 # Documentación de la Tesis
 Documentacion/
