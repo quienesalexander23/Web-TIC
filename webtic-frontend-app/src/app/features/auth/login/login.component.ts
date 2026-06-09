@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +16,11 @@ export class LoginComponent {
   isLoading = false;
   errorMessage = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@epn\.edu\.ec$/)]],
       password: ['', [Validators.required, Validators.minLength(8)]]
@@ -38,10 +44,18 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // TODO: Connect to backend API
-    setTimeout(() => {
-      this.isLoading = false;
-      this.errorMessage = 'Credenciales incorrectas (Mock)';
-    }, 1500);
+    const credentials = this.loginForm.value;
+
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        sessionStorage.setItem('token', response.token);
+        this.isLoading = false;
+        this.router.navigate(['/admin/users']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error.error?.message || 'Credenciales incorrectas o error en el servidor.';
+      }
+    });
   }
 }
