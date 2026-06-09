@@ -46,40 +46,41 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Mock Data representing the prototype -->
+        @for (user of users; track user.id) {
         <tr>
-          <td class="font-medium">Dr. Carlos Mendoza</td>
-          <td class="text-secondary">carlos.mendoza@epn.edu.ec</td>
-          <td><span class="badge badge-admin">Admin</span></td>
-          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
+          <td class="font-medium">{{ user.firstName }} {{ user.lastName }}</td>
+          <td class="text-secondary">{{ user.email }}</td>
+          <td>
+            @for (role of user.roles; track role) {
+              <span class="badge" 
+                    [ngClass]="{
+                      'badge-admin': role === 'Administrador',
+                      'badge-docente': role === 'Docente',
+                      'badge-presidente': role === 'Presidente CPGIC',
+                      'badge-miembro': role === 'Miembro CPGIC'
+                    }">{{ role }}</span>
+            }
+          </td>
+          <td>
+            <span class="status-pill" [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
+              <span class="dot"></span> {{ user.isActive ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
           <td>
              <!-- Actions will go here -->
           </td>
         </tr>
-        <tr>
-          <td class="font-medium">Ing. Maria Torres</td>
-          <td class="text-secondary">maria.torres@epn.edu.ec</td>
-          <td><span class="badge badge-docente">Docente</span></td>
-          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="font-medium">MSc. Juan Pablo Rios</td>
-          <td class="text-secondary">juan.rios@epn.edu.ec</td>
-          <td><span class="badge badge-presidente">Presidente CPGIC</span></td>
-          <td><span class="status-pill status-inactive"><span class="dot"></span> Inactivo</span></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="font-medium">Dra. Elena Silva</td>
-          <td class="text-secondary">elena.silva@epn.edu.ec</td>
-          <td>
-            <span class="badge badge-docente">Docente</span>
-            <span class="badge badge-miembro" style="margin-left: 4px;">Miembro CPGIC</span>
-          </td>
-          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
-          <td></td>
-        </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="text-center" style="padding: 32px; color: #64748b;">
+              @if (loading) {
+                Cargando usuarios...
+              } @else {
+                No se encontraron usuarios registrados.
+              }
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>

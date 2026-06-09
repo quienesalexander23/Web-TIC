@@ -11,6 +11,8 @@ namespace WebTIC.API.Data
         {
         }
 
+        public DbSet<SystemPermission> SystemPermissions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
