@@ -7,8 +7,8 @@
   <div class="glass-card">
     <div class="card-header">
       <div class="logo-container">
-        <!-- Puedes reemplazar la URL por la real del logo de tu universidad -->
-        <img src="https://epn.edu.ec/wp-content/uploads/2019/10/logo-epn-blanco-300x126.png" alt="Logo EPN" class="logo">
+        <!-- Logo oficial a color de la EPN para fondos claros -->
+        <img src="https://www.epn.edu.ec/wp-content/uploads/2015/11/logo-EPN.png" alt="Logo EPN" class="logo">
       </div>
       <h2>Sistema Web-TIC</h2>
       <p>Gestión de TICs - Facultad de Ingeniería de Sistemas</p>
@@ -36,7 +36,7 @@
         </div>
         <span class="error-text" *ngIf="emailControl?.hasError('required') && emailControl?.touched">El correo es obligatorio.</span>
         <span class="error-text" *ngIf="(emailControl?.hasError('email') || emailControl?.hasError('pattern')) && emailControl?.touched">
-          Debe ser un correo institucional (@epn.edu.ec).
+          Debe ser un correo institucional (&#64;epn.edu.ec).
         </span>
       </div>
 

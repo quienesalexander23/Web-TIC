@@ -11,16 +11,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0b0f19;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+  background-color: #ffffff; /* Fondo completamente blanco */
   position: relative;
   overflow: hidden;
+  padding: 1.5rem;
 }
 
-/* Formas Abstractas de Fondo */
+/* Efectos de fondo sutiles para dar el toque "Premium" pero en tema claro */
 .blob {
   position: absolute;
   border-radius: 50%;
@@ -30,56 +27,44 @@
 }
 
 .blob-1 {
-  width: 400px;
-  height: 400px;
-  background: rgba(37, 99, 235, 0.4); /* Azul */
-  top: -100px;
+  width: 500px;
+  height: 500px;
+  background: rgba(37, 99, 235, 0.08); /* Azul muy sutil */
+  top: -150px;
   left: -100px;
   animation-delay: 0s;
 }
 
 .blob-2 {
-  width: 300px;
-  height: 300px;
-  background: rgba(139, 92, 246, 0.3); /* Púrpura */
-  bottom: -50px;
+  width: 400px;
+  height: 400px;
+  background: rgba(14, 165, 233, 0.05); /* Celeste sutil */
+  bottom: -100px;
   right: -50px;
   animation-delay: 2s;
 }
 
-.blob-3 {
-  width: 250px;
-  height: 250px;
-  background: rgba(14, 165, 233, 0.2); /* Celeste */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-delay: 4s;
-}
-
 @keyframes float {
   0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(20px) scale(1.05); }
+  100% { transform: translateY(30px) scale(1.05); }
 }
 
-/* Tarjeta Glassmorphism */
+/* Tarjeta Principal */
 .glass-card {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   padding: 3rem 2.5rem;
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8); /* Borde gris muy claro */
   border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(37, 99, 235, 0.03);
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -91,28 +76,25 @@
 
 .logo-container {
   display: inline-flex;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  padding: 0;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .logo {
-  height: 40px;
+  height: 65px;
   object-fit: contain;
 }
 
 .card-header h2 {
-  color: #ffffff;
+  color: #0f172a; /* Texto oscuro */
   font-size: 1.75rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.025em;
 }
 
 .card-header p {
-  color: #94a3b8;
+  color: #64748b; /* Texto gris */
   font-size: 0.95rem;
   margin: 0;
 }
@@ -131,9 +113,9 @@
 }
 
 .input-group label {
-  color: #cbd5e1;
+  color: #334155;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-left: 0.25rem;
 }
 
@@ -146,15 +128,15 @@
 .input-icon {
   position: absolute;
   left: 1rem;
-  color: #64748b;
+  color: #94a3b8;
   transition: color 0.3s ease;
 }
 
 .input-wrapper input {
   width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
+  background: #f8fafc; /* Fondo gris súper claro para inputs */
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
   padding: 0.875rem 1rem 0.875rem 3rem;
   border-radius: 12px;
   font-family: inherit;
@@ -163,15 +145,19 @@
   outline: none;
 }
 
+.input-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
 .input-wrapper input:focus {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  background: #ffffff;
+  border-color: #2563eb; /* Azul secundario */
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
 .input-wrapper input:focus + .input-icon,
 .input-wrapper input:not(:placeholder-shown) + .input-icon {
-  color: #3b82f6;
+  color: #2563eb;
 }
 
 .input-wrapper input.invalid {
@@ -186,6 +172,7 @@
   color: #ef4444;
   font-size: 0.75rem;
   margin-left: 0.25rem;
+  font-weight: 500;
   animation: fadeIn 0.3s ease;
 }
 
@@ -198,20 +185,21 @@
 }
 
 .forgot-password a {
-  color: #3b82f6;
+  color: #2563eb; /* Azul secundario */
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .forgot-password a:hover {
-  color: #60a5fa;
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 /* Botón Principal */
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  background: #2563eb; /* Azul secundario institucional */
   color: white;
   border: none;
   padding: 1rem;
@@ -224,12 +212,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -246,9 +235,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   padding: 1rem;
   border-radius: 12px;
   font-size: 0.875rem;
@@ -257,7 +246,7 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -273,4 +262,19 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Responsividad Estricta */
+@media screen and (max-width: 480px) {
+  .glass-card {
+    padding: 2.5rem 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .card-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .blob-1 { width: 300px; height: 300px; }
+  .blob-2 { width: 250px; height: 250px; }
 }
