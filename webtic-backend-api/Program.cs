@@ -13,6 +13,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 // 1. Configurar Entity Framework con PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -98,14 +110,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // Habilitar CORS
-app.UseCors(builder => builder
-    .WithOrigins("http://localhost:4200")
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials());
+app.UseCors("AllowAngular");
 
 // Habilitar la Autenticación y Autorización
 app.UseAuthentication();

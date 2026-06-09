@@ -16,7 +16,7 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7220/api/auth';
+  private apiUrl = 'http://localhost:5080/api/auth';
 
   constructor(private http: HttpClient) { }
 

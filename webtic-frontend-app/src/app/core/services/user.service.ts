@@ -22,7 +22,7 @@ export interface PaginatedResult<T> {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'https://localhost:7220/api/usuarios';
+  private apiUrl = 'http://localhost:5080/api/usuarios';
 
   constructor(private http: HttpClient) { }
 
