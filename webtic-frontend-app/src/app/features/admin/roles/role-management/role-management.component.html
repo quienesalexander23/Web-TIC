@@ -1,7 +1,7 @@
 <div class="page-header">
   <div class="header-content">
-    <h2>Role Assignment & Permissions</h2>
-    <p>Manage access control levels across the WebTIC FIS platform. Configure granular permissions for administrative, academic, and faculty roles to ensure secure and appropriate system access.</p>
+    <h2>Gestión de Roles y Permisos</h2>
+    <p>Configura los niveles de acceso de forma granular a través de los módulos de Web-TIC FIS para mantener el sistema seguro.</p>
   </div>
 </div>
 
@@ -10,58 +10,36 @@
   <div class="role-selector-card">
     <div class="card-header-simple">
       <div class="icon-title">
-        <i class="icon-users-setting"></i>
-        <h3>Select Role</h3>
+        <span style="font-size: 20px;">👥</span>
+        <h3>Seleccionar Rol</h3>
       </div>
     </div>
     
     <div class="role-options">
-      <!-- Role Option: Admin -->
-      <label class="role-option">
-        <input type="radio" name="selectedRole" checked>
-        <div class="role-info">
-          <span class="role-name">Admin</span>
-          <span class="role-desc">Full system access</span>
-        </div>
-      </label>
-
-      <!-- Role Option: Docente -->
-      <label class="role-option active">
-        <input type="radio" name="selectedRole">
-        <div class="role-info">
-          <span class="role-name">Docente</span>
-          <span class="role-desc">Academic management</span>
-        </div>
-      </label>
-
-      <!-- Role Option: Presidente CPGIC -->
-      <label class="role-option">
-        <input type="radio" name="selectedRole">
-        <div class="role-info">
-          <span class="role-name">Presidente CPGIC</span>
-          <span class="role-desc">Program oversight</span>
-        </div>
-      </label>
-
-      <!-- Role Option: Miembro CPGIC -->
-      <label class="role-option">
-        <input type="radio" name="selectedRole">
-        <div class="role-info">
-          <span class="role-name">Miembro CPGIC</span>
-          <span class="role-desc">Committee reviewer</span>
-        </div>
-      </label>
+      @if (loadingRoles) {
+        <p style="padding: 16px; color: #64748b;">Cargando roles...</p>
+      } @else {
+        @for (role of roles; track role.id) {
+        <label class="role-option" [class.active]="activeRole?.id === role.id" (click)="selectRole(role)">
+          <input type="radio" name="selectedRole" [checked]="activeRole?.id === role.id">
+          <div class="role-info">
+            <span class="role-name">{{ role.name }}</span>
+            <span class="role-desc">Nivel de acceso</span>
+          </div>
+        </label>
+        }
+      }
     </div>
 
-    <button class="btn-outline-primary block-btn">
-      + Create New Role
+    <button class="btn-outline-primary block-btn" style="margin-top: 16px;" disabled>
+      + Crear Nuevo Rol
     </button>
 
     <div class="info-box">
-      <i class="info-icon">ℹ</i>
+      <div style="font-size: 20px; color: #0284c7;">ℹ️</div>
       <div class="info-content">
-        <strong>Permission Inheritance</strong>
-        <p>Changes made to base roles will propagate to all users currently assigned to that role unless overridden individually.</p>
+        <strong>Herencia de Permisos</strong>
+        <p>Los cambios en los permisos se propagarán inmediatamente a todos los usuarios con este rol asignado.</p>
       </div>
     </div>
   </div>
@@ -70,79 +48,72 @@
   <div class="permissions-card">
     <div class="permissions-header">
       <div class="icon-title">
-        <i class="icon-sliders"></i>
+        <span style="font-size: 24px;">⚙️</span>
         <div>
-          <h3>Docente Permissions</h3>
-          <p class="subtitle">Configure granular access for the selected role across modules.</p>
+          <h3>Permisos de {{ activeRole?.name || 'Seleccione un rol' }}</h3>
+          <p class="subtitle">Configura los accesos granulares (CRUD) para este rol.</p>
         </div>
       </div>
       <div class="actions">
-        <button class="btn-outline">Discard Changes</button>
-        <button class="btn-primary">Save Permissions</button>
+        <button class="btn-outline" (click)="activeRole && loadPermissions(activeRole.name)" [disabled]="!activeRole || loadingPermissions">Descartar</button>
+        <button class="btn-primary" (click)="savePermissions()" [disabled]="!activeRole || saving || loadingPermissions">
+          {{ saving ? 'Guardando...' : 'Guardar Permisos' }}
+        </button>
       </div>
     </div>
 
-    <table class="permissions-table">
-      <thead>
-        <tr>
-          <th style="width: 40%">Module / Resource</th>
-          <th class="text-center">Read</th>
-          <th class="text-center">Write</th>
-          <th class="text-center">Approve</th>
-          <th class="text-center">Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Section: Academic Planning -->
-        <tr class="section-row">
-          <td colspan="5">Academic Planning</td>
-        </tr>
-        <tr>
-          <td><i class="icon-book"></i> Syllabi Management</td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox"></td>
-          <td class="text-center"><input type="checkbox"></td>
-        </tr>
-        <tr>
-          <td><i class="icon-calendar"></i> Class Schedules</td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox"></td>
-          <td class="text-center"><input type="checkbox"></td>
-          <td class="text-center"><input type="checkbox"></td>
-        </tr>
-
-        <!-- Section: Research & Projects -->
-        <tr class="section-row">
-          <td colspan="5">Research & Projects</td>
-        </tr>
-        <tr>
-          <td><i class="icon-flask"></i> Research Proposals</td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox"></td>
-          <td class="text-center"><input type="checkbox"></td>
-        </tr>
-        <tr>
-          <td><i class="icon-folder"></i> Degree Projects (Titulación)</td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox" checked></td>
-          <td class="text-center"><input type="checkbox"></td>
-          <td class="text-center"><input type="checkbox"></td>
-        </tr>
-
-        <!-- Section: System Administration -->
-        <tr class="section-row">
-          <td colspan="5">System Administration (Restricted)</td>
-        </tr>
-        <tr class="disabled-row">
-          <td><i class="icon-settings-sm"></i> Global Configurations</td>
-          <td class="text-center"><input type="checkbox" disabled></td>
-          <td class="text-center"><input type="checkbox" disabled></td>
-          <td class="text-center"><input type="checkbox" disabled></td>
-          <td class="text-center"><input type="checkbox" disabled></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-container" style="overflow-x: auto;">
+      <table class="permissions-table">
+        <thead>
+          <tr>
+            <th style="width: 40%">Módulo / Recurso</th>
+            <th class="text-center">Lectura (Read)</th>
+            <th class="text-center">Escritura (Write)</th>
+            <th class="text-center">Aprobación (Approve)</th>
+            <th class="text-center">Eliminación (Delete)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loadingPermissions) {
+            <tr>
+              <td colspan="5" class="text-center" style="padding: 32px; color: #64748b;">
+                Cargando matriz de permisos...
+              </td>
+            </tr>
+          } @else if (groupedPermissions.length === 0) {
+            <tr>
+              <td colspan="5" class="text-center" style="padding: 32px; color: #64748b;">
+                No hay permisos configurados para este rol.
+              </td>
+            </tr>
+          } @else {
+            @for (group of groupedPermissions; track group.moduleName) {
+              <!-- Section: Module -->
+              <tr class="section-row">
+                <td colspan="5">{{ group.moduleName }}</td>
+              </tr>
+              <!-- Items: Resources -->
+              @for (perm of group.items; track perm.id) {
+                <tr [class.disabled-row]="activeRole?.name === 'Administrador'">
+                  <td><span style="margin-right: 8px; color: #64748b;">📄</span> {{ perm.resourceName }}</td>
+                  <td class="text-center">
+                    <input type="checkbox" [(ngModel)]="perm.canRead" [disabled]="activeRole?.name === 'Administrador'">
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" [(ngModel)]="perm.canWrite" [disabled]="activeRole?.name === 'Administrador'">
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" [(ngModel)]="perm.canApprove" [disabled]="activeRole?.name === 'Administrador'">
+                  </td>
+                  <td class="text-center">
+                    <input type="checkbox" [(ngModel)]="perm.canDelete" [disabled]="activeRole?.name === 'Administrador'">
+                  </td>
+                </tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

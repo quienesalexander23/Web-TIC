@@ -13,10 +13,12 @@ namespace WebTIC.API.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly WebTIC.API.Services.IEmailService _emailService;
 
-        public UsuariosController(UserManager<ApplicationUser> userManager)
+        public UsuariosController(UserManager<ApplicationUser> userManager, WebTIC.API.Services.IEmailService emailService)
         {
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -98,8 +100,8 @@ namespace WebTIC.API.Controllers
                 EmailConfirmed = true
             };
 
-            // Contraseña temporal (en producción se enviaría por correo)
-            string temporalPassword = "TemporalPassword2026!!";
+            // Contraseña temporal segura (mínimo 8, 1 mayúscula, 1 número)
+            string temporalPassword = "WebTIC_" + Guid.NewGuid().ToString().Substring(0, 8) + "!";
             
             var result = await _userManager.CreateAsync(user, temporalPassword);
 
@@ -111,7 +113,25 @@ namespace WebTIC.API.Controllers
                 await _userManager.AddToRoleAsync(user, dto.Role);
             }
 
-            return Ok(new { message = "Usuario creado exitosamente", temporalPassword });
+            // Enviar la contraseña por correo electrónico
+            var loginLink = "http://localhost:4200/login";
+            var emailBody = $@"
+                <h2>Bienvenido a Web-TIC EPN</h2>
+                <p>Hola {user.FirstName} {user.LastName},</p>
+                <p>Se ha creado una cuenta para ti en el sistema Web-TIC. A continuación tus credenciales de acceso:</p>
+                <ul>
+                    <li><strong>Correo Institucional:</strong> {user.Email}</li>
+                    <li><strong>Contraseña Temporal:</strong> {temporalPassword}</li>
+                </ul>
+                <p>Puedes iniciar sesión en el siguiente enlace:</p>
+                <p><a href='{loginLink}'>{loginLink}</a></p>
+                <br>
+                <p>Por tu seguridad, te recomendamos restablecer esta contraseña desde la pantalla de inicio de sesión utilizando la opción '¿Olvidaste tu contraseña?'.</p>
+            ";
+
+            await _emailService.SendEmailAsync(user.Email, "Credenciales de Acceso - WebTIC", emailBody);
+
+            return Ok(new { message = "Usuario creado exitosamente. Se ha enviado un correo con las credenciales." });
         }
 
         [HttpPut("{id}")]

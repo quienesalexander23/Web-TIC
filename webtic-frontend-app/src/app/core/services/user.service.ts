@@ -18,6 +18,19 @@ export interface PaginatedResult<T> {
   pageSize: number;
 }
 
+export interface CreateUsuarioDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
+export interface UpdateUsuarioDto {
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -36,6 +49,14 @@ export class UserService {
     if (isActive !== undefined) params = params.set('isActive', isActive.toString());
 
     return this.http.get<PaginatedResult<UsuarioDto>>(this.apiUrl, { params });
+  }
+
+  createUser(dto: CreateUsuarioDto): Observable<any> {
+    return this.http.post(this.apiUrl, dto);
+  }
+
+  updateUser(id: string, dto: UpdateUsuarioDto): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, dto);
   }
 
   toggleStatus(userId: string): Observable<any> {

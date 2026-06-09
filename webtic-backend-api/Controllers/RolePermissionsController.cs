@@ -21,6 +21,13 @@ namespace WebTIC.API.Controllers
             _roleManager = roleManager;
         }
 
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _roleManager.Roles.Select(r => new { r.Id, r.Name }).ToListAsync();
+            return Ok(roles);
+        }
+
         [HttpGet("{roleName}")]
         public async Task<IActionResult> GetPermissionsByRole(string roleName)
         {

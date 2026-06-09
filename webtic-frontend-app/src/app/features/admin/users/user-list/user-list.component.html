@@ -67,7 +67,12 @@
             </span>
           </td>
           <td>
-             <!-- Actions will go here -->
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="openUserModal(user)" title="Editar">✏️</button>
+              <button class="btn-icon" [ngClass]="user.isActive ? 'btn-deactivate' : 'btn-activate'" (click)="toggleStatus(user)" [title]="user.isActive ? 'Desactivar' : 'Activar'">
+                {{ user.isActive ? '🚫' : '✅' }}
+              </button>
+            </div>
           </td>
         </tr>
         } @empty {
@@ -87,13 +92,80 @@
 
   <!-- Pagination -->
   <div class="pagination-container">
-    <span class="pagination-info">Mostrando 1 a 4 de 12 usuarios</span>
-    <div class="pagination-controls">
-      <button class="page-btn" disabled>&lt;</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">&gt;</button>
+    <span class="pagination-info">Mostrando usuarios</span>
+  </div>
+</div>
+
+<!-- Glassmorphism Modal -->
+@if (isModalOpen) {
+<div class="modal-overlay">
+  <div class="glass-modal">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Editar Usuario' : 'Añadir Nuevo Usuario' }}</h3>
+      <button class="btn-close" (click)="closeModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="login-form">
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label for="firstName">Nombre</label>
+            <div class="input-wrapper">
+              <input type="text" id="firstName" formControlName="firstName" placeholder="Ej. Alexander" [class.invalid]="firstNameControl?.invalid && firstNameControl?.touched">
+            </div>
+            @if (firstNameControl?.invalid && firstNameControl?.touched) {
+              <span class="error-text">Requerido</span>
+            }
+          </div>
+
+          <div class="input-group">
+            <label for="lastName">Apellido</label>
+            <div class="input-wrapper">
+              <input type="text" id="lastName" formControlName="lastName" placeholder="Ej. Tibanta" [class.invalid]="lastNameControl?.invalid && lastNameControl?.touched">
+            </div>
+            @if (lastNameControl?.invalid && lastNameControl?.touched) {
+              <span class="error-text">Requerido</span>
+            }
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="email">Correo Institucional</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" formControlName="email" placeholder="nombre.apellido@epn.edu.ec" [class.invalid]="emailControl?.invalid && emailControl?.touched">
+          </div>
+          @if (emailControl?.invalid && emailControl?.touched) {
+            <span class="error-text">
+              @if(emailControl?.errors?.['required']) { Requerido }
+              @else if(emailControl?.errors?.['pattern']) { Debe ser del dominio &#64;epn.edu.ec }
+            </span>
+          }
+        </div>
+
+        <div class="input-group">
+          <label for="role">Rol</label>
+          <div class="input-wrapper">
+            <select id="role" formControlName="role" [class.invalid]="roleControl?.invalid && roleControl?.touched">
+              <option value="">Seleccione un rol...</option>
+              @for (r of roles; track r.id) {
+                <option [value]="r.name">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+          @if (roleControl?.invalid && roleControl?.touched) {
+            <span class="error-text">Debe seleccionar un rol</span>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="isSaving">
+            @if(isSaving) { Guardando... } @else { Guardar }
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+}
