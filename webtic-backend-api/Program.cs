@@ -13,6 +13,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Servicios de aplicación
+builder.Services.AddScoped<WebTIC.API.Services.IEmailService, WebTIC.API.Services.EmailService>();
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {

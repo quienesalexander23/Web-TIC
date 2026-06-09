@@ -16,15 +16,18 @@ namespace WebTIC.API.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly WebTIC.API.Services.IEmailService _emailService;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            WebTIC.API.Services.IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         [HttpPost("login")]
@@ -85,11 +88,24 @@ namespace WebTIC.API.Controllers
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             
-            // En un entorno real aquí se enviaría un correo (System.Net.Mail / SendGrid)
-            // Para propósitos de la tesis y desarrollo, vamos a imprimir el Token en la consola del backend o devolverlo
-            Console.WriteLine($"\n=======================================\n[RESET TOKEN PARA {model.Email}]:\n{token}\n=======================================\n");
+            // Construimos la URL del Frontend para recuperar contraseña
+            var encodedToken = Uri.EscapeDataString(token);
+            var resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
 
-            return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación.", DebugToken = token });
+            // Usamos el IEmailService para enviar el correo (localmente se guardará en /LocalEmails)
+            var emailBody = $@"
+                <h2>Restablecer Contraseña Web-TIC EPN</h2>
+                <p>Hola {user.FirstName},</p>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta institucional.</p>
+                <p>Por favor, haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+                <p><a href='{resetLink}'>{resetLink}</a></p>
+                <br>
+                <p>Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.</p>
+            ";
+
+            await _emailService.SendEmailAsync(user.Email, "Recuperación de Contraseña - WebTIC", emailBody);
+
+            return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación." });
         }
 
         [HttpPost("reset-password")]
