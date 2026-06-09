@@ -51,7 +51,18 @@ namespace WebTIC.API.Data
             await CreateUserIfNotExists("admin.webtic@epn.edu.ec", "Admin", "Sistema", "Administrador", "Santodomingo23!!");
 
             // Usuarios solicitados para pruebas
-            await CreateUserIfNotExists("alexander.tibanta@epn.edu.ec", "Alexander", "Tibanta", "Estudiante", "Santodomingo23!!");
+            var alexEmail = "alexander.tibanta@epn.edu.ec";
+            var alexUser = await userManager.FindByEmailAsync(alexEmail);
+            if (alexUser == null)
+            {
+                await CreateUserIfNotExists(alexEmail, "Alexander", "Tibanta", "Administrador", "Santodomingo23!!");
+            }
+            else
+            {
+                var currentRoles = await userManager.GetRolesAsync(alexUser);
+                await userManager.RemoveFromRolesAsync(alexUser, currentRoles);
+                await userManager.AddToRoleAsync(alexUser, "Administrador");
+            }
             await CreateUserIfNotExists("victor.velepucha@epn.edu.ec", "Victor", "Velepucha", "Docente", "Santodomingo23!!");
             
             // Usuarios para otros roles
