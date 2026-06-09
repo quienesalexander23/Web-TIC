@@ -1,0 +1,69 @@
+<div class="login-container">
+  <!-- Círculos decorativos para el efecto glassmorphism -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="glass-card">
+    <div class="card-header">
+      <div class="logo-container">
+        <!-- Puedes reemplazar la URL por la real del logo de tu universidad -->
+        <img src="https://epn.edu.ec/wp-content/uploads/2019/10/logo-epn-blanco-300x126.png" alt="Logo EPN" class="logo">
+      </div>
+      <h2>Sistema Web-TIC</h2>
+      <p>Gestión de TICs - Facultad de Ingeniería de Sistemas</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      
+      <!-- Mensaje de Error Global -->
+      <div class="alert alert-error" *ngIf="errorMessage">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="input-group">
+        <label for="email">Correo Institucional</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            placeholder="usuario@epn.edu.ec"
+            [class.invalid]="emailControl?.invalid && emailControl?.touched"
+          >
+        </div>
+        <span class="error-text" *ngIf="emailControl?.hasError('required') && emailControl?.touched">El correo es obligatorio.</span>
+        <span class="error-text" *ngIf="(emailControl?.hasError('email') || emailControl?.hasError('pattern')) && emailControl?.touched">
+          Debe ser un correo institucional (@epn.edu.ec).
+        </span>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Contraseña</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            placeholder="••••••••"
+            [class.invalid]="passwordControl?.invalid && passwordControl?.touched"
+          >
+        </div>
+        <span class="error-text" *ngIf="passwordControl?.hasError('required') && passwordControl?.touched">La contraseña es obligatoria.</span>
+        <span class="error-text" *ngIf="passwordControl?.hasError('minlength') && passwordControl?.touched">La contraseña debe tener al menos 8 caracteres.</span>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Iniciar Sesión</span>
+        <div class="spinner" *ngIf="isLoading"></div>
+      </button>
+    </form>
+  </div>
+</div>
