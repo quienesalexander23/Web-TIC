@@ -1,0 +1,60 @@
+SupaBase
+
+General
+Project Settings
+General configuration, domains, ownership, and lifecycle
+General settings
+TIC-EPN
+Project name
+Displayed throughout the dashboard.
+wfbktmyaccoahrhikgju
+Project ID
+Reference used in APIs and URLs.
+us-east-1
+Project region
+East US (North Virginia)
+
+Service versions
+Service versions and upgrade eligibility for your provisioned instance.
+
+Auth version
+2.189.0
+PostgREST version
+14.5
+Postgres version
+17.6.1.127
+
+API Keys
+
+Publishable key
+This key is safe to use in a browser if you have enabled Row Level Security (RLS) for your tables and configured policies.
+sb_publishable_3HZQh1jQVE44KpNTqzPEtg_WNnNrB0s
+
+Secret keys
+These API keys allow privileged access to your project's APIs. Use in servers, functions, workers or other backend components of your application.
+sb_secret_mwA0JEJM66eEFn7301C4QA_ezkvx62A
+
+anon public
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmYmt0bXlhY2NvYWhyaGlrZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjkxMDcsImV4cCI6MjA5NjU0NTEwN30.PZiK2O2U8l_3ql72e-KCJH1arcc_8dcGAaOQ8Ucqi3E
+
+service_role secret
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmYmt0bXlhY2NvYWhyaGlrZ2p1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDk2OTEwNywiZXhwIjoyMDk2NTQ1MTA3fQ.jhEEFs06fY31HSzciGdZeeujJ2pc5G9HNAzoaUtcA6A
+
+JWT Keys
+Status - Current key
+Key ID - 6e051096-fae5-415b-b4d5-b89f593ef478
+Type - ECC (P-256)
+
+Previously used keys
+Status - Previous key
+Key ID - 6e051096-fae5-415b-b4d5-b89f593ef478
+Type - ECC (P-256)
+
+Previously used keys
+
+Status - Previous key
+Key ID	- e32b9966-8a5f-413e-b024-0b583f1739e2
+Type - Legacy HS256 (Shared Secret)
+Last rotated at	Actions 
+Legacy HS256 (Shared Secret)
+
