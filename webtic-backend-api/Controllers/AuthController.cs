@@ -55,7 +55,7 @@ namespace WebTIC.API.Controllers
 
             if (result.IsLockedOut)
             {
-                return Unauthorized(new { Message = "Cuenta suspendida temporalmente por múltiples intentos fallidos. Intente nuevamente en 15 minutos." });
+                return StatusCode(423, new { Message = "Cuenta suspendida temporalmente por múltiples intentos fallidos. Intente nuevamente en 15 minutos." });
             }
 
             if (!result.Succeeded)
@@ -71,6 +71,44 @@ namespace WebTIC.API.Controllers
                 Token = token,
                 Message = "Autenticación exitosa"
             });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !user.IsActive)
+            {
+                // Devolvemos 200 de igual manera para evitar enumeración de correos
+                return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            
+            // En un entorno real aquí se enviaría un correo (System.Net.Mail / SendGrid)
+            // Para propósitos de la tesis y desarrollo, vamos a imprimir el Token en la consola del backend o devolverlo
+            Console.WriteLine($"\n=======================================\n[RESET TOKEN PARA {model.Email}]:\n{token}\n=======================================\n");
+
+            return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación.", DebugToken = token });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest(new { Message = "Error al restablecer la contraseña." });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Contraseña restablecida correctamente." });
+            }
+
+            return BadRequest(new { Message = "Token inválido o expirado, o la contraseña no cumple las políticas.", Errors = result.Errors });
         }
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
