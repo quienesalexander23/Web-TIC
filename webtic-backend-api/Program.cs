@@ -67,7 +67,29 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Administrador"));
+    options.AddPolicy("RequireDocenteRole", policy => policy.RequireRole("Docente", "Administrador"));
+    options.AddPolicy("RequireCPGICRole", policy => policy.RequireRole("Presidente CPGIC", "Miembro CPGIC", "Administrador"));
+});
+
 var app = builder.Build();
+
+// Ejecutar Seeder
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await DbSeeder.SeedRolesAndUsersAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

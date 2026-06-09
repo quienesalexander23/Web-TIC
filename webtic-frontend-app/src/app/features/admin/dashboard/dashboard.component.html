@@ -1,0 +1,45 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="assets/EPN-LOGO.png" alt="Logo WebTIC FIS" class="sidebar-logo">
+      <div class="header-text">
+        <h2>Administration</h2>
+        <p>WebTIC Portal</p>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+        <i class="icon-users"></i> Users
+      </a>
+      <a routerLink="/admin/roles" routerLinkActive="active" class="nav-item">
+        <i class="icon-shield"></i> Roles
+      </a>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <i class="icon-settings"></i> Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="top-brand">
+        <h1>WebTIC FIS</h1>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn"><i class="icon-bell"></i></button>
+        <div class="user-profile">
+          <img src="assets/avatar-placeholder.png" alt="Profile" class="avatar">
+        </div>
+      </div>
+    </header>
+
+    <!-- Dynamic Content injected here -->
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

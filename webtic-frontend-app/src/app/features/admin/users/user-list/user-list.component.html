@@ -1,0 +1,98 @@
+<div class="page-header">
+  <div class="header-content">
+    <h2>Gestión de Usuarios</h2>
+    <p>Administra el acceso y roles de los miembros de la facultad.</p>
+  </div>
+  <button class="btn-primary" (click)="openUserModal()">
+    + Crear Usuario
+  </button>
+</div>
+
+<div class="card">
+  <!-- Toolbar: Search and Filters -->
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="search-icon">🔍</i>
+      <input type="text" placeholder="Buscar por nombre o correo...">
+    </div>
+    
+    <div class="filters">
+      <select class="filter-select">
+        <option>Todos los Roles</option>
+        <option>Admin</option>
+        <option>Docente</option>
+        <option>Presidente CPGIC</option>
+        <option>Miembro CPGIC</option>
+      </select>
+      
+      <select class="filter-select">
+        <option>Estado</option>
+        <option>Activo</option>
+        <option>Inactivo</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>NOMBRE COMPLETO</th>
+          <th>CORREO INSTITUCIONAL</th>
+          <th>ROL</th>
+          <th>ESTADO</th>
+          <th>ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Mock Data representing the prototype -->
+        <tr>
+          <td class="font-medium">Dr. Carlos Mendoza</td>
+          <td class="text-secondary">carlos.mendoza@epn.edu.ec</td>
+          <td><span class="badge badge-admin">Admin</span></td>
+          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
+          <td>
+             <!-- Actions will go here -->
+          </td>
+        </tr>
+        <tr>
+          <td class="font-medium">Ing. Maria Torres</td>
+          <td class="text-secondary">maria.torres@epn.edu.ec</td>
+          <td><span class="badge badge-docente">Docente</span></td>
+          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="font-medium">MSc. Juan Pablo Rios</td>
+          <td class="text-secondary">juan.rios@epn.edu.ec</td>
+          <td><span class="badge badge-presidente">Presidente CPGIC</span></td>
+          <td><span class="status-pill status-inactive"><span class="dot"></span> Inactivo</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="font-medium">Dra. Elena Silva</td>
+          <td class="text-secondary">elena.silva@epn.edu.ec</td>
+          <td>
+            <span class="badge badge-docente">Docente</span>
+            <span class="badge badge-miembro" style="margin-left: 4px;">Miembro CPGIC</span>
+          </td>
+          <td><span class="status-pill status-active"><span class="dot"></span> Activo</span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <span class="pagination-info">Mostrando 1 a 4 de 12 usuarios</span>
+    <div class="pagination-controls">
+      <button class="page-btn" disabled>&lt;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">&gt;</button>
+    </div>
+  </div>
+</div>

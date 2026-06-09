@@ -1,0 +1,148 @@
+<div class="page-header">
+  <div class="header-content">
+    <h2>Role Assignment & Permissions</h2>
+    <p>Manage access control levels across the WebTIC FIS platform. Configure granular permissions for administrative, academic, and faculty roles to ensure secure and appropriate system access.</p>
+  </div>
+</div>
+
+<div class="roles-layout">
+  <!-- Left Column: Role Selector -->
+  <div class="role-selector-card">
+    <div class="card-header-simple">
+      <div class="icon-title">
+        <i class="icon-users-setting"></i>
+        <h3>Select Role</h3>
+      </div>
+    </div>
+    
+    <div class="role-options">
+      <!-- Role Option: Admin -->
+      <label class="role-option">
+        <input type="radio" name="selectedRole" checked>
+        <div class="role-info">
+          <span class="role-name">Admin</span>
+          <span class="role-desc">Full system access</span>
+        </div>
+      </label>
+
+      <!-- Role Option: Docente -->
+      <label class="role-option active">
+        <input type="radio" name="selectedRole">
+        <div class="role-info">
+          <span class="role-name">Docente</span>
+          <span class="role-desc">Academic management</span>
+        </div>
+      </label>
+
+      <!-- Role Option: Presidente CPGIC -->
+      <label class="role-option">
+        <input type="radio" name="selectedRole">
+        <div class="role-info">
+          <span class="role-name">Presidente CPGIC</span>
+          <span class="role-desc">Program oversight</span>
+        </div>
+      </label>
+
+      <!-- Role Option: Miembro CPGIC -->
+      <label class="role-option">
+        <input type="radio" name="selectedRole">
+        <div class="role-info">
+          <span class="role-name">Miembro CPGIC</span>
+          <span class="role-desc">Committee reviewer</span>
+        </div>
+      </label>
+    </div>
+
+    <button class="btn-outline-primary block-btn">
+      + Create New Role
+    </button>
+
+    <div class="info-box">
+      <i class="info-icon">ℹ</i>
+      <div class="info-content">
+        <strong>Permission Inheritance</strong>
+        <p>Changes made to base roles will propagate to all users currently assigned to that role unless overridden individually.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Permissions Matrix -->
+  <div class="permissions-card">
+    <div class="permissions-header">
+      <div class="icon-title">
+        <i class="icon-sliders"></i>
+        <div>
+          <h3>Docente Permissions</h3>
+          <p class="subtitle">Configure granular access for the selected role across modules.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-outline">Discard Changes</button>
+        <button class="btn-primary">Save Permissions</button>
+      </div>
+    </div>
+
+    <table class="permissions-table">
+      <thead>
+        <tr>
+          <th style="width: 40%">Module / Resource</th>
+          <th class="text-center">Read</th>
+          <th class="text-center">Write</th>
+          <th class="text-center">Approve</th>
+          <th class="text-center">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Section: Academic Planning -->
+        <tr class="section-row">
+          <td colspan="5">Academic Planning</td>
+        </tr>
+        <tr>
+          <td><i class="icon-book"></i> Syllabi Management</td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox"></td>
+          <td class="text-center"><input type="checkbox"></td>
+        </tr>
+        <tr>
+          <td><i class="icon-calendar"></i> Class Schedules</td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox"></td>
+          <td class="text-center"><input type="checkbox"></td>
+          <td class="text-center"><input type="checkbox"></td>
+        </tr>
+
+        <!-- Section: Research & Projects -->
+        <tr class="section-row">
+          <td colspan="5">Research & Projects</td>
+        </tr>
+        <tr>
+          <td><i class="icon-flask"></i> Research Proposals</td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox"></td>
+          <td class="text-center"><input type="checkbox"></td>
+        </tr>
+        <tr>
+          <td><i class="icon-folder"></i> Degree Projects (Titulación)</td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox" checked></td>
+          <td class="text-center"><input type="checkbox"></td>
+          <td class="text-center"><input type="checkbox"></td>
+        </tr>
+
+        <!-- Section: System Administration -->
+        <tr class="section-row">
+          <td colspan="5">System Administration (Restricted)</td>
+        </tr>
+        <tr class="disabled-row">
+          <td><i class="icon-settings-sm"></i> Global Configurations</td>
+          <td class="text-center"><input type="checkbox" disabled></td>
+          <td class="text-center"><input type="checkbox" disabled></td>
+          <td class="text-center"><input type="checkbox" disabled></td>
+          <td class="text-center"><input type="checkbox" disabled></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
