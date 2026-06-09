@@ -17,17 +17,20 @@ namespace WebTIC.API.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly WebTIC.API.Services.IEmailService _emailService;
+        private readonly WebTIC.API.Services.IAuditService _auditService;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration configuration,
-            WebTIC.API.Services.IEmailService emailService)
+            WebTIC.API.Services.IEmailService emailService,
+            WebTIC.API.Services.IAuditService auditService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _emailService = emailService;
+            _auditService = auditService;
         }
 
         [HttpPost("login")]
@@ -69,6 +72,10 @@ namespace WebTIC.API.Controllers
             // Generar JWT
             var token = await GenerateJwtToken(user);
             
+            // Auditoría
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            await _auditService.LogEventAsync("LOGIN", user.Id, ipAddress, "Inicio de sesión exitoso");
+
             return Ok(new 
             { 
                 Token = token,
@@ -121,6 +128,9 @@ namespace WebTIC.API.Controllers
             
             if (result.Succeeded)
             {
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+                await _auditService.LogEventAsync("RESET_PASSWORD", user.Id, ipAddress, "Contraseña restablecida correctamente");
+                
                 return Ok(new { Message = "Contraseña restablecida correctamente." });
             }
 

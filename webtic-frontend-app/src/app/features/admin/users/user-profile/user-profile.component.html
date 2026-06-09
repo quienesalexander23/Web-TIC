@@ -1,0 +1,141 @@
+<div class="profile-container glass-panel">
+  
+  <div class="header-section">
+    <h1>Perfil de Usuario</h1>
+    <button class="btn btn-primary btn-editar" (click)="toggleEdit()">
+      {{ isEditing ? 'Cancelar Edición' : 'Editar Perfil' }}
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando perfil...</p>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div class="grid-layout" *ngIf="!isLoading && profile">
+    
+    <!-- Columna Izquierda -->
+    <div class="left-col">
+      <!-- Tarjeta Principal de Identidad -->
+      <div class="glass-card user-identity">
+        <div class="avatar-wrapper">
+          <img src="assets/avatar-placeholder.png" alt="Avatar" class="avatar-img" onerror="this.src='https://ui-avatars.com/api/?name=' + profile.firstName + '+' + profile.lastName + '&background=0D47A1&color=fff&size=128'" />
+        </div>
+        
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="form-container">
+          <div *ngIf="!isEditing" class="view-mode-title">
+            <h2 class="user-name">{{ profile.firstName }} {{ profile.lastName }}</h2>
+            <p class="user-title">{{ profile.roles[0] || 'Usuario' }} de WebTIC</p>
+          </div>
+
+          <div *ngIf="isEditing" class="edit-mode-inputs">
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" class="form-control" formControlName="firstName" placeholder="Ej. Juan">
+            </div>
+            <div class="form-group">
+              <label>Apellido</label>
+              <input type="text" class="form-control" formControlName="lastName" placeholder="Ej. Pérez">
+            </div>
+            <button type="submit" class="btn btn-success btn-save" [disabled]="profileForm.invalid">Guardar Cambios</button>
+          </div>
+        </form>
+
+        <div class="contact-info">
+          <div class="info-row">
+            <i class="icon-mail"></i>
+            <span>{{ profile.email }}</span>
+          </div>
+          <div class="info-row">
+            <i class="icon-phone"></i>
+            <span>+593 2 2976 300</span>
+          </div>
+          <div class="info-row">
+            <i class="icon-location"></i>
+            <span>Edificio de Sistemas, EPN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Estado Institucional -->
+      <div class="glass-card status-card">
+        <h3>ESTADO INSTITUCIONAL</h3>
+        <div class="status-indicator">
+          <span class="status-dot" [class.active]="profile.isActive"></span>
+          <span>{{ profile.isActive ? 'Activo' : 'Inactivo' }}</span>
+        </div>
+        <p class="last-access">Último acceso: Recientemente</p>
+      </div>
+    </div>
+
+    <!-- Columna Derecha -->
+    <div class="right-col">
+      <!-- Información Académica -->
+      <div class="glass-card academic-info">
+        <h2>Información Académica</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>FACULTAD</label>
+            <p>Facultad de Ingeniería de Sistemas (FIS)</p>
+          </div>
+          <div class="info-item">
+            <label>DEPARTAMENTO</label>
+            <p>Departamento de Informática y Ciencias de la Computación (DICC)</p>
+          </div>
+          <div class="info-item">
+            <label>DEDICACIÓN</label>
+            <p>Tiempo Completo (40 horas)</p>
+          </div>
+          <div class="info-item">
+            <label>FECHA DE INGRESO</label>
+            <p>15 de Septiembre, 2010</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roles en el Sistema -->
+      <div class="glass-card roles-info">
+        <h2>Roles en el Sistema</h2>
+        <div class="badges-container">
+          <span class="role-badge primary-badge" *ngFor="let role of profile.roles">{{ role }}</span>
+          <span class="role-badge secondary-badge" *ngIf="profile.roles.includes('Docente')">Investigador</span>
+          <span class="role-badge secondary-badge" *ngIf="profile.roles.includes('Docente')">Tutor de Titulación</span>
+        </div>
+      </div>
+
+      <!-- Actividad Reciente -->
+      <div class="glass-card activity-info">
+        <h2>Actividad Reciente</h2>
+        <div class="activity-cards">
+          <div class="activity-card">
+            <div class="activity-icon blue"><i class="icon-doc"></i></div>
+            <h4>Syllabus Actualizado</h4>
+            <p>Ingeniería de Software II - CP1</p>
+            <small>Hace 1 día</small>
+          </div>
+          <div class="activity-card">
+            <div class="activity-icon green"><i class="icon-check"></i></div>
+            <h4>Calificaciones Subidas</h4>
+            <p>Bimestre 1 - Gestión de Proyectos</p>
+            <small>Hace 3 días</small>
+          </div>
+          <div class="activity-card">
+            <div class="activity-icon gray"><i class="icon-calendar"></i></div>
+            <h4>Reunión de Departamento</h4>
+            <p>Asistencia confirmada</p>
+            <small>Hace 1 semana</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

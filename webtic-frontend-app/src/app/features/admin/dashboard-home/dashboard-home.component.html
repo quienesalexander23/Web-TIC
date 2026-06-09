@@ -1,0 +1,91 @@
+<div class="dashboard-home">
+  <div class="header-section">
+    <h1>Dashboard de Administración</h1>
+    <p class="subtitle">Resumen del estado del Módulo de Gestión de Usuarios y Autenticación</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div class="stats-container" *ngIf="!isLoading && stats">
+    
+    <!-- Top Cards Row -->
+    <div class="cards-row">
+      <div class="glass-card stat-card blue">
+        <div class="stat-icon"><i class="icon-users"></i></div>
+        <div class="stat-content">
+          <h3>Usuarios Totales</h3>
+          <p class="stat-number">{{ stats.totalUsers }}</p>
+        </div>
+      </div>
+      
+      <div class="glass-card stat-card green">
+        <div class="stat-icon"><i class="icon-user-check"></i></div>
+        <div class="stat-content">
+          <h3>Usuarios Activos</h3>
+          <p class="stat-number">{{ stats.activeUsers }}</p>
+        </div>
+      </div>
+      
+      <div class="glass-card stat-card red">
+        <div class="stat-icon"><i class="icon-user-x"></i></div>
+        <div class="stat-content">
+          <h3>Usuarios Inactivos</h3>
+          <p class="stat-number">{{ stats.inactiveUsers }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row (Roles & Activity) -->
+    <div class="bottom-row">
+      
+      <!-- Distribución de Roles -->
+      <div class="glass-card roles-card">
+        <h2>Distribución por Roles</h2>
+        <div class="role-list">
+          <div class="role-item" *ngFor="let item of stats.rolesDistribution | keyvalue">
+            <div class="role-info">
+              <span class="role-name">{{ item.key }}</span>
+              <span class="role-count">{{ item.value }} usuario(s)</span>
+            </div>
+            <!-- Barra de progreso visual (se calcula porcentaje simple) -->
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(item.value / stats.totalUsers) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad Reciente -->
+      <div class="glass-card activity-card">
+        <h2>Actividad Reciente</h2>
+        <div class="activity-timeline">
+          <div class="timeline-item" *ngFor="let log of stats.recentActivity">
+            <div class="timeline-icon" [ngClass]="{
+              'login': log.actionType === 'LOGIN',
+              'create': log.actionType === 'CREATE_USER',
+              'update': log.actionType === 'UPDATE_USER',
+              'reset': log.actionType === 'RESET_PASSWORD'
+            }"></div>
+            <div class="timeline-content">
+              <h4>{{ log.actionType }}</h4>
+              <p>{{ log.details }} (ID: {{ log.userId }})</p>
+              <small>{{ log.timestamp | date:'short' }}</small>
+            </div>
+          </div>
+          <div *ngIf="stats.recentActivity.length === 0" class="text-muted">
+            No hay actividad reciente.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

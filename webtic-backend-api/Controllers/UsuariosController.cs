@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebTIC.API.Models;
 using WebTIC.API.Models.DTOs;
+using System.Security.Claims;
 
 namespace WebTIC.API.Controllers
 {
@@ -14,11 +15,13 @@ namespace WebTIC.API.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly WebTIC.API.Services.IEmailService _emailService;
+        private readonly WebTIC.API.Services.IAuditService _auditService;
 
-        public UsuariosController(UserManager<ApplicationUser> userManager, WebTIC.API.Services.IEmailService emailService)
+        public UsuariosController(UserManager<ApplicationUser> userManager, WebTIC.API.Services.IEmailService emailService, WebTIC.API.Services.IAuditService auditService)
         {
             _userManager = userManager;
             _emailService = emailService;
+            _auditService = auditService;
         }
 
         [HttpGet]
@@ -131,6 +134,10 @@ namespace WebTIC.API.Controllers
 
             await _emailService.SendEmailAsync(user.Email, "Credenciales de Acceso - WebTIC", emailBody);
 
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "System";
+            await _auditService.LogEventAsync("CREATE_USER", currentUserId, ipAddress, $"Creó al usuario {user.Email}");
+
             return Ok(new { message = "Usuario creado exitosamente. Se ha enviado un correo con las credenciales." });
         }
 
@@ -156,6 +163,10 @@ namespace WebTIC.API.Controllers
                     await _userManager.AddToRoleAsync(user, dto.Role);
                 }
             }
+
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "System";
+            await _auditService.LogEventAsync("UPDATE_USER", currentUserId, ipAddress, $"Actualizó al usuario {user.Email}");
 
             return Ok(new { message = "Usuario actualizado exitosamente" });
         }

@@ -12,6 +12,7 @@ namespace WebTIC.API.Data
         }
 
         public DbSet<SystemPermission> SystemPermissions { get; set; }
+        public DbSet<LogAuditoria> LogAuditoria { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

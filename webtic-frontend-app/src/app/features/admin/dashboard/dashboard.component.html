@@ -10,11 +10,17 @@
     </div>
     
     <nav class="sidebar-nav">
+      <a *appHasRole="['Administrador']" routerLink="/admin/home" routerLinkActive="active" class="nav-item">
+        <i class="icon-home"></i> Home
+      </a>
       <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
         <i class="icon-users"></i> Users
       </a>
       <a *appHasRole="['Administrador']" routerLink="/admin/roles" routerLinkActive="active" class="nav-item">
         <i class="icon-shield"></i> Roles
+      </a>
+      <a *appHasRole="['Administrador']" routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
+        <i class="icon-file-text"></i> Audit Log
       </a>
       <a *appHasRole="['Administrador']" routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
         <i class="icon-settings"></i> Settings
@@ -31,7 +37,7 @@
       </div>
       <div class="top-actions">
         <button class="icon-btn"><i class="icon-bell"></i></button>
-        <div class="user-profile">
+        <div class="user-profile" routerLink="/admin/profile" style="cursor: pointer;" title="Mi Perfil">
           <img src="assets/avatar-placeholder.png" alt="Profile" class="avatar">
         </div>
       </div>

@@ -9,9 +9,12 @@ export const routes: Routes = [
     path: 'admin', 
     loadComponent: () => import('./features/admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
     children: [
+      { path: 'home', loadComponent: () => import('./features/admin/dashboard-home/dashboard-home.component').then(m => m.DashboardHomeComponent) },
       { path: 'users', loadComponent: () => import('./features/admin/users/user-list/user-list.component').then(m => m.UserListComponent) },
       { path: 'roles', loadComponent: () => import('./features/admin/roles/role-management/role-management.component').then(m => m.RoleManagementComponent) },
-      { path: '', redirectTo: 'users', pathMatch: 'full' }
+      { path: 'profile', loadComponent: () => import('./features/admin/users/user-profile/user-profile.component').then(m => m.UserProfileComponent) },
+      { path: 'audit', loadComponent: () => import('./features/admin/audit/audit-log/audit-log.component').then(m => m.AuditLogComponent) },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

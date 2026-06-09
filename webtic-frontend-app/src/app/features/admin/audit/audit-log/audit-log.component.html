@@ -1,0 +1,83 @@
+<div class="audit-container" *appHasRole="['Administrador']">
+  
+  <div class="header-section">
+    <h1>Registro de Auditoría</h1>
+    <p class="subtitle">Trazabilidad de eventos críticos del sistema</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando logs de auditoría...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div class="table-card glass-panel" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Tipo de Acción</th>
+          <th>Usuario (ID)</th>
+          <th>Dirección IP</th>
+          <th>Detalles</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td>{{ log.timestamp | date:'short' }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-login': log.actionType === 'LOGIN',
+              'badge-create': log.actionType === 'CREATE_USER',
+              'badge-update': log.actionType === 'UPDATE_USER',
+              'badge-reset': log.actionType === 'RESET_PASSWORD'
+            }">{{ log.actionType }}</span>
+          </td>
+          <td>{{ log.userId }}</td>
+          <td>{{ log.ipAddress }}</td>
+          <td>{{ log.details }}</td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="5" class="text-center py-4 text-muted">No hay registros de auditoría disponibles.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === 1" 
+        (click)="onPageChange(currentPage - 1)">
+        Anterior
+      </button>
+      
+      <button 
+        *ngFor="let page of getPageArray()" 
+        class="page-btn" 
+        [class.active]="page === currentPage" 
+        (click)="onPageChange(page)">
+        {{ page }}
+      </button>
+      
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === totalPages" 
+        (click)="onPageChange(currentPage + 1)">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Mensaje de acceso denegado si no es admin -->
+<ng-template #noAccess>
+  <div class="access-denied glass-panel">
+    <h2>Acceso Denegado</h2>
+    <p>Solo los administradores pueden visualizar el registro de auditoría.</p>
+  </div>
+</ng-template>

@@ -62,4 +62,12 @@ export class UserService {
   toggleStatus(userId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${userId}/estado`, {});
   }
+
+  getMyProfile(): Observable<UsuarioDto> {
+    return this.http.get<UsuarioDto>('http://localhost:5080/api/profile/me');
+  }
+
+  updateMyProfile(dto: { firstName: string, lastName: string }): Observable<any> {
+    return this.http.put('http://localhost:5080/api/profile/me', dto);
+  }
 }
