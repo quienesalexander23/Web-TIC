@@ -158,9 +158,8 @@ namespace WebTIC.API.Controllers
                         <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
                         <p>Haz clic en el siguiente botón para crear una nueva:</p>
                         <div style='text-align: center; margin: 30px 0;'>
-                            <a href='{resetLink}' style='background-color: #00346F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Restablecer Contraseña</a>
+                            <a href='{resetLink}' style='background-color: #00346F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Restablecer Contraseña</a>
                         </div>
-                        <p style='word-break: break-all; font-size: 13px;'>Si el botón no funciona, copia y pega este enlace:<br><a href='{resetLink}'>{resetLink}</a></p>
                         <p style='font-size: 12px; color: #6b7280; margin-top: 30px;'>Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.</p>
                     </div>
                 </div>";
