@@ -6,66 +6,33 @@
   font-family: 'Outfit', sans-serif;
 }
 
-.login-container {
+.login-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff; /* Fondo completamente blanco */
+  background-color: #ffffff; /* Fondo completamente blanco según imagen */
   position: relative;
   overflow: hidden;
   padding: 1.5rem;
 }
 
-/* Efectos de fondo sutiles para dar el toque "Premium" pero en tema claro */
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  animation: float 10s infinite ease-in-out alternate;
-}
-
-.blob-1 {
-  width: 500px;
-  height: 500px;
-  background: rgba(37, 99, 235, 0.08); /* Azul muy sutil */
-  top: -150px;
-  left: -100px;
-  animation-delay: 0s;
-}
-
-.blob-2 {
-  width: 400px;
-  height: 400px;
-  background: rgba(14, 165, 233, 0.05); /* Celeste sutil */
-  bottom: -100px;
-  right: -50px;
-  animation-delay: 2s;
-}
-
-@keyframes float {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(30px) scale(1.05); }
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 440px;
 }
 
 /* Tarjeta Principal */
 .glass-card {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  max-width: 440px;
   padding: 3rem 2.5rem;
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8); /* Borde gris muy claro */
-  border-radius: 24px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(37, 99, 235, 0.03);
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  border: 1px solid #e5e7eb; /* Borde sutil según imagen */
+  border-radius: 8px; /* Bordes ligeramente redondeados */
+  box-shadow: none; /* Sin sombras exageradas, diseño plano */
 }
 
 /* Cabecera de la Tarjeta */
@@ -86,15 +53,15 @@
 }
 
 .card-header h2 {
-  color: #0f172a; /* Texto oscuro */
-  font-size: 1.75rem;
-  font-weight: 700;
+  color: #111827; /* Texto oscuro fuerte */
+  font-size: 1.5rem;
+  font-weight: 600;
   margin: 0 0 0.5rem 0;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
 }
 
 .card-header p {
-  color: #64748b; /* Texto gris */
+  color: #6b7280; /* Texto gris intermedio */
   font-size: 0.95rem;
   margin: 0;
 }
@@ -113,10 +80,9 @@
 }
 
 .input-group label {
-  color: #334155;
+  color: #111827;
   font-size: 0.875rem;
   font-weight: 600;
-  margin-left: 0.25rem;
 }
 
 .input-wrapper {
@@ -128,36 +94,35 @@
 .input-icon {
   position: absolute;
   left: 1rem;
-  color: #94a3b8;
+  color: #9ca3af;
   transition: color 0.3s ease;
 }
 
 .input-wrapper input {
   width: 100%;
-  background: #f8fafc; /* Fondo gris súper claro para inputs */
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
-  padding: 0.875rem 1rem 0.875rem 3rem;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d1d5db; /* Borde gris clásico */
+  color: #111827;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border-radius: 4px; /* Bordes de input más cuadrados */
   font-family: inherit;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   outline: none;
 }
 
 .input-wrapper input::placeholder {
-  color: #94a3b8;
+  color: #9ca3af;
 }
 
 .input-wrapper input:focus {
-  background: #ffffff;
-  border-color: #2563eb; /* Azul secundario */
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  border-color: #00346F; /* Color principal EPN */
+  box-shadow: 0 0 0 2px rgba(0, 52, 111, 0.1);
 }
 
 .input-wrapper input:focus + .input-icon,
 .input-wrapper input:not(:placeholder-shown) + .input-icon {
-  color: #2563eb;
+  color: #00346F;
 }
 
 .input-wrapper input.invalid {
@@ -165,64 +130,55 @@
 }
 
 .input-wrapper input.invalid:focus {
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
 }
 
 .error-text {
   color: #ef4444;
   font-size: 0.75rem;
-  margin-left: 0.25rem;
   font-weight: 500;
   animation: fadeIn 0.3s ease;
 }
 
 /* Opciones secundarias */
-.forgot-password {
+.form-options {
   display: flex;
   justify-content: flex-end;
-  margin-top: -0.5rem;
+  margin-top: -0.25rem;
   margin-bottom: 0.5rem;
 }
 
-.forgot-password a {
-  color: #2563eb; /* Azul secundario */
+.forgot-link {
+  color: #00346F; /* Azul oscuro EPN */
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.forgot-password a:hover {
-  color: #1d4ed8;
+.forgot-link:hover {
   text-decoration: underline;
 }
 
 /* Botón Principal */
 .btn-primary {
-  background: #2563eb; /* Azul secundario institucional */
+  background: #00346F; /* Azul oscuro EPN EXACTO */
   color: white;
   border: none;
-  padding: 1rem;
-  border-radius: 12px;
+  padding: 0.875rem;
+  border-radius: 4px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  background: #00234b; /* Más oscuro para el hover */
 }
 
 .btn-primary:disabled {
@@ -239,10 +195,10 @@
   border: 1px solid #fecaca;
   color: #dc2626;
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeIn 0.4s ease;
 }
 
 @keyframes fadeIn {
@@ -264,17 +220,41 @@
   to { transform: rotate(360deg); }
 }
 
+/* Security Code Input Boxes */
+.code-inputs-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.code-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00346F;
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.code-box:focus {
+  border-color: #00346F;
+  box-shadow: 0 0 0 3px rgba(0, 52, 111, 0.15);
+}
+
+.code-box.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+
 /* Responsividad Estricta */
 @media screen and (max-width: 480px) {
   .glass-card {
-    padding: 2.5rem 1.5rem;
-    border-radius: 20px;
+    padding: 2rem 1.5rem;
   }
-  
-  .card-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .blob-1 { width: 300px; height: 300px; }
-  .blob-2 { width: 250px; height: 250px; }
 }
