@@ -69,12 +69,59 @@ namespace WebTIC.API.Controllers
                 return Unauthorized(new { Message = "Credenciales incorrectas" });
             }
 
-            // Generar JWT
+            // Generar código 2FA
+            var twoFactorCode = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+
+            // Preparar el cuerpo del correo
+            var emailBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #00346F; padding: 20px; text-align: center;'>
+                        <h1 style='color: white; margin: 0; font-size: 24px;'>Sistema Web-TIC</h1>
+                    </div>
+                    <div style='padding: 30px; color: #333;'>
+                        <h2 style='color: #00346F; margin-top: 0;'>Código de Acceso</h2>
+                        <p>Hola {user.FirstName},</p>
+                        <p>Has intentado iniciar sesión en tu cuenta. Por favor, utiliza el siguiente código numérico para verificar tu identidad:</p>
+                        <div style='background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #00346F; margin: 20px 0; border-radius: 4px;'>
+                            {twoFactorCode}
+                        </div>
+                        <p>Este código caduca en un par de minutos.</p>
+                        <p style='font-size: 12px; color: #6b7280; margin-top: 30px;'>Si no solicitaste este código, puedes ignorar este mensaje.</p>
+                    </div>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email!, "Tu código de acceso", emailBody);
+
+            return Ok(new 
+            { 
+                Requires2FA = true,
+                Email = user.Email,
+                Message = "Se ha enviado un código de seguridad a su correo."
+            });
+        }
+
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> Verify2FA([FromBody] Verify2FADto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !user.IsActive)
+            {
+                return Unauthorized(new { Message = "Credenciales incorrectas o cuenta inactiva." });
+            }
+
+            // Verificar el código 2FA
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(user, "Email", model.Code);
+            if (!isValid)
+            {
+                return BadRequest(new { Message = "El código ingresado es incorrecto o ha expirado." });
+            }
+
+            // Código válido, generar JWT
             var token = await GenerateJwtToken(user);
             
             // Auditoría
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-            await _auditService.LogEventAsync("LOGIN", user.Id, ipAddress, "Inicio de sesión exitoso");
+            await _auditService.LogEventAsync("LOGIN_2FA", user.Id, ipAddress, "Inicio de sesión 2FA exitoso");
 
             return Ok(new 
             { 
@@ -99,18 +146,26 @@ namespace WebTIC.API.Controllers
             var encodedToken = Uri.EscapeDataString(token);
             var resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
 
-            // Usamos el IEmailService para enviar el correo (localmente se guardará en /LocalEmails)
+            // Usamos el IEmailService para enviar el correo con diseño profesional
             var emailBody = $@"
-                <h2>Restablecer Contraseña Web-TIC EPN</h2>
-                <p>Hola {user.FirstName},</p>
-                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta institucional.</p>
-                <p>Por favor, haz clic en el siguiente enlace para crear una nueva contraseña:</p>
-                <p><a href='{resetLink}'>{resetLink}</a></p>
-                <br>
-                <p>Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.</p>
-            ";
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #00346F; padding: 20px; text-align: center;'>
+                        <h1 style='color: white; margin: 0; font-size: 24px;'>Sistema Web-TIC</h1>
+                    </div>
+                    <div style='padding: 30px; color: #333;'>
+                        <h2 style='color: #00346F; margin-top: 0;'>Recuperación de Contraseña</h2>
+                        <p>Hola {user.FirstName},</p>
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                        <p>Haz clic en el siguiente botón para crear una nueva:</p>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <a href='{resetLink}' style='background-color: #00346F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Restablecer Contraseña</a>
+                        </div>
+                        <p style='word-break: break-all; font-size: 13px;'>Si el botón no funciona, copia y pega este enlace:<br><a href='{resetLink}'>{resetLink}</a></p>
+                        <p style='font-size: 12px; color: #6b7280; margin-top: 30px;'>Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.</p>
+                    </div>
+                </div>";
 
-            await _emailService.SendEmailAsync(user.Email, "Recuperación de Contraseña - WebTIC", emailBody);
+            await _emailService.SendEmailAsync(user.Email, "Recuperación de Contraseña", emailBody);
 
             return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación." });
         }
@@ -140,7 +195,8 @@ namespace WebTIC.API.Controllers
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"]!);
+            var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? jwtSettings["Secret"];
+            var key = Encoding.ASCII.GetBytes(secret!);
 
             // Obtener roles del usuario
             var roles = await _userManager.GetRolesAsync(user);

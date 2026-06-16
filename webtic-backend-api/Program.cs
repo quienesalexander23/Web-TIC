@@ -6,6 +6,9 @@ using System.Text;
 using WebTIC.API.Data;
 using WebTIC.API.Models;
 
+// Cargar variables de entorno desde .env
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,8 +33,9 @@ builder.Services.AddCors(options =>
 });
 
 // 1. Configurar Entity Framework con PostgreSQL
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
+    ?? builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string not found.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -57,8 +61,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+// Configurar el tiempo de expiración de los códigos de seguridad (Ej: 2 minutos)
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromMinutes(2);
+});
+
 // 3. Configurar Autenticación con JWT
-var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "SECRET_PROVISIONAL_PARA_COMPILAR_ERROR";
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") 
+    ?? builder.Configuration["JwtSettings:Secret"] 
+    ?? "SECRET_PROVISIONAL_PARA_COMPILAR_ERROR";
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>

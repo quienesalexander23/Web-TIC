@@ -13,21 +13,26 @@ namespace WebTIC.API.Services
 
         public Task SendEmailAsync(string toEmail, string subject, string message)
         {
-            var smtpSettings = _configuration.GetSection("SmtpSettings");
+            var server = Environment.GetEnvironmentVariable("SMTP_SERVER") ?? "smtp.gmail.com";
+            var port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
+            var username = Environment.GetEnvironmentVariable("SMTP_USERNAME");
+            var password = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+            var senderName = Environment.GetEnvironmentVariable("SMTP_SENDER_NAME") ?? "WebTIC EPN";
+            var senderEmail = Environment.GetEnvironmentVariable("SMTP_SENDER_EMAIL") ?? username;
 
             using var client = new SmtpClient
             {
-                Host = smtpSettings["Server"]!,
-                Port = int.Parse(smtpSettings["Port"]!),
+                Host = server,
+                Port = port,
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
                 UseDefaultCredentials = false,
-                Credentials = new System.Net.NetworkCredential(smtpSettings["Username"], smtpSettings["Password"])
+                Credentials = new System.Net.NetworkCredential(username, password)
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(smtpSettings["SenderEmail"]!, smtpSettings["SenderName"]),
+                From = new MailAddress(senderEmail!, senderName),
                 Subject = subject,
                 Body = message,
                 IsBodyHtml = true
