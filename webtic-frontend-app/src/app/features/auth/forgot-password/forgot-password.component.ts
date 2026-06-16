@@ -40,11 +40,11 @@ export class ForgotPasswordComponent {
     const email = this.forgotForm.value.email;
 
     this.authService.forgotPassword(email).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.isLoading = false;
         this.successMessage = res.message || 'Se ha enviado un enlace a tu correo institucional si está registrado.';
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isLoading = false;
         this.errorMessage = 'Hubo un error al procesar tu solicitud. Inténtalo más tarde.';
       }

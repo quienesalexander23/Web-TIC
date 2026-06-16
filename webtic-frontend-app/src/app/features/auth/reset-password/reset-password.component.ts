@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -19,40 +19,66 @@ export class ResetPasswordComponent implements OnInit {
   
   email = '';
   token = '';
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder, 
     private authService: AuthService,
-    private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
-    // Patrón para verificar mínimo 8 caracteres, mayúscula, minúscula y número
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
-    
     this.resetForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.pattern(passwordPattern)]],
+      newPassword: ['', [
+        Validators.required, 
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+      ]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.email = params['email'] || '';
       this.token = params['token'] || '';
       
       if (!this.email || !this.token) {
-        this.errorMessage = 'Enlace de recuperación inválido o incompleto.';
+        this.errorMessage = 'Enlace de recuperación inválido.';
       }
     });
   }
 
   passwordMatchValidator(g: FormGroup) {
     return g.get('newPassword')?.value === g.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+      ? null : { 'mismatch': true };
   }
 
-  get newPasswordControl() { return this.resetForm.get('newPassword'); }
-  get confirmPasswordControl() { return this.resetForm.get('confirmPassword'); }
+  get newPasswordControl() {
+    return this.resetForm.get('newPassword');
+  }
+
+  get confirmPasswordControl() {
+    return this.resetForm.get('confirmPassword');
+  }
+
+  get hasMinLength() {
+    return (this.newPasswordControl?.value || '').length >= 8;
+  }
+
+  get hasUpper() {
+    return /[A-Z]/.test(this.newPasswordControl?.value || '');
+  }
+
+  get hasNumber() {
+    return /\d/.test(this.newPasswordControl?.value || '');
+  }
+
+  get hasSpecial() {
+    return /[@$!%*?&]/.test(this.newPasswordControl?.value || '');
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
   onSubmit() {
     if (this.resetForm.invalid || !this.email || !this.token) {
@@ -61,24 +87,26 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.successMessage = '';
     this.errorMessage = '';
+    this.successMessage = '';
 
-    const payload = {
+    const data = {
       email: this.email,
       token: this.token,
       newPassword: this.resetForm.value.newPassword
     };
 
-    this.authService.resetPassword(payload).subscribe({
-      next: (res) => {
+    this.authService.resetPassword(data).subscribe({
+      next: (response) => {
         this.isLoading = false;
-        this.successMessage = 'Tu contraseña ha sido restablecida exitosamente. Redirigiendo...';
-        setTimeout(() => this.router.navigate(['/login']), 3000);
+        this.successMessage = response.message || 'Contraseña actualizada correctamente. Redirigiendo...';
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 3000);
       },
-      error: (err) => {
+      error: (error) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || 'Hubo un error al restablecer la contraseña. El token puede haber expirado.';
+        this.errorMessage = error.error?.message || 'Error al restablecer contraseña.';
       }
     });
   }

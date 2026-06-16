@@ -8,8 +8,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  expiration: string;
+  token?: string;
+  expiration?: string;
+  requires2FA?: boolean;
+  email?: string;
+  message?: string;
+}
+
+export interface Verify2FARequest {
+  email: string;
+  code: string;
 }
 
 @Injectable({
@@ -22,6 +30,10 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request);
+  }
+
+  verify2FA(request: Verify2FARequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/verify-2fa`, request);
   }
 
   forgotPassword(email: string): Observable<any> {
