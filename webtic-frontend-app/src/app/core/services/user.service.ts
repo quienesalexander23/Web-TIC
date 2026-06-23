@@ -8,6 +8,7 @@ export interface UsuarioDto {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  isLockedOut?: boolean;
   roles: string[];
 }
 
@@ -61,6 +62,10 @@ export class UserService {
 
   toggleStatus(userId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${userId}/estado`, {});
+  }
+
+  unlockUser(userId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${userId}/unlock`, {});
   }
 
   getMyProfile(): Observable<UsuarioDto> {

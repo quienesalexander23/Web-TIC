@@ -23,6 +23,9 @@ export class LoginComponent implements OnDestroy {
   userEmail = '';
   canResend = false;
   
+  errorTitle = '';
+  errorDescription = '';
+  
   timeLeft = 120;
   timerInterval: any;
 
@@ -127,6 +130,9 @@ export class LoginComponent implements OnDestroy {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.errorTitle = '';
+    this.errorDescription = '';
+    this.successMessage = '';
 
     const credentials = this.loginForm.value;
 
@@ -137,7 +143,15 @@ export class LoginComponent implements OnDestroy {
           this.requires2FA = true;
           this.userEmail = credentials.email;
           this.successMessage = response.message || 'Se ha enviado un código de seguridad a su correo.';
+          
           this.startTimer();
+          
+          // Enfocar el primer input después de un breve delay
+          setTimeout(() => {
+            if (this.digitInputs?.first?.nativeElement) {
+              this.digitInputs.first.nativeElement.focus();
+            }
+          }, 100);
         } else if (response.token) {
           sessionStorage.setItem('token', response.token);
           this.router.navigate(['/admin/users']);
@@ -145,15 +159,9 @@ export class LoginComponent implements OnDestroy {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Login error details:', error);
-        
-        if (error.status === 0) {
-          this.errorMessage = 'Error de conexión con el servidor. Verifica que la API esté corriendo (dotnet run) y que hayas aceptado el certificado HTTPS.';
-        } else if (error.status === 401 || error.status === 400 || error.status === 404) {
-          this.errorMessage = error.error?.message || 'Credenciales incorrectas.';
-        } else if (error.status === 423) {
-          // HTTP 423 Locked
-          this.router.navigate(['/account-locked']);
+        if (error.error?.errorType) {
+          this.errorTitle = error.error.message;
+          this.errorDescription = error.error.description;
         } else {
           this.errorMessage = `Error interno del servidor (${error.status}). Inténtalo más tarde.`;
         }

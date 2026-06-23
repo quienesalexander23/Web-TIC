@@ -71,6 +71,29 @@
             <a routerLink="/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
           </div>
 
+          <!-- Alert Box (reemplaza al antiguo error-message para login failures) -->
+          @if (errorTitle) {
+            <div class="alert-error-box">
+              <div class="alert-icon-container">
+                <svg xmlns="http://www.w3.org/2000/svg" class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" fill="#b91c1c" stroke="none"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12" stroke="white"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16" stroke="white"></line>
+                </svg>
+              </div>
+              <div class="alert-content">
+                <h4 class="alert-title">{{ errorTitle }}</h4>
+                <p class="alert-desc">{{ errorDescription }}</p>
+              </div>
+            </div>
+          }
+
+          @if (errorMessage && !errorTitle) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
+
           <button type="submit" class="btn-primary" [disabled]="isLoading">
             @if (isLoading) {
               <div class="spinner"></div>

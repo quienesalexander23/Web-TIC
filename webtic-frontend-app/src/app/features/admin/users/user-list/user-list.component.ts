@@ -156,4 +156,19 @@ export class UserListComponent implements OnInit {
       });
     }
   }
+
+  unlockUser(user: UsuarioDto) {
+    if (confirm(`¿Estás seguro de desbloquear a ${user.firstName} ${user.lastName}?`)) {
+      this.userService.unlockUser(user.id).subscribe({
+        next: () => {
+          alert('Usuario desbloqueado exitosamente. Se ha enviado un correo con instrucciones para restablecer su contraseña.');
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error al desbloquear usuario');
+        }
+      });
+    }
+  }
 }

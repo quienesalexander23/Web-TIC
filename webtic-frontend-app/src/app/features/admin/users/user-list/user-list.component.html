@@ -62,12 +62,21 @@
             }
           </td>
           <td>
-            <span class="status-pill" [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
-              <span class="dot"></span> {{ user.isActive ? 'Activo' : 'Inactivo' }}
-            </span>
+            @if(user.isLockedOut) {
+              <span class="status-pill status-inactive" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">
+                <span class="dot" style="background: #ef4444;"></span> Bloqueado
+              </span>
+            } @else {
+              <span class="status-pill" [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
+                <span class="dot"></span> {{ user.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            }
           </td>
           <td>
             <div class="action-buttons">
+              @if(user.isLockedOut) {
+                <button class="btn-icon" (click)="unlockUser(user)" title="Desbloquear Cuenta" style="color: #ef4444;">🔓</button>
+              }
               <button class="btn-icon btn-edit" (click)="openUserModal(user)" title="Editar">✏️</button>
               <button class="btn-icon" [ngClass]="user.isActive ? 'btn-deactivate' : 'btn-activate'" (click)="toggleStatus(user)" [title]="user.isActive ? 'Desactivar' : 'Activar'">
                 {{ user.isActive ? '🚫' : '✅' }}
