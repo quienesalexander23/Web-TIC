@@ -50,8 +50,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false; // Ajustar según decisión final
     
-    // Bloqueo de cuenta tras 5 intentos fallidos (Flujo 1)
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    // Bloqueo de cuenta tras 5 intentos fallidos permanente (100 años) para que solo un admin lo quite
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(36500);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
     

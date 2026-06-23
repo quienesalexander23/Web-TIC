@@ -68,6 +68,7 @@ namespace WebTIC.API.Controllers
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     IsActive = user.IsActive,
+                    IsLockedOut = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow,
                     Roles = userRoles.ToList()
                 });
             }
@@ -181,6 +182,49 @@ namespace WebTIC.API.Controllers
             await _userManager.UpdateAsync(user);
 
             return Ok(new { message = $"Usuario {(user.IsActive ? "activado" : "desactivado")} exitosamente", isActive = user.IsActive });
+        }
+
+        [HttpPost("{id}/unlock")]
+        public async Task<IActionResult> UnlockUsuario(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound(new { message = "Usuario no encontrado" });
+
+            // 1. Quitar el bloqueo y reiniciar intentos
+            await _userManager.SetLockoutEndDateAsync(user, null);
+            await _userManager.ResetAccessFailedCountAsync(user);
+
+            // 2. Generar Token para restablecer contraseña
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var resetLink = $"http://localhost:4200/reset-password?email={user.Email}&token={encodedToken}";
+
+            // 3. Enviar correo de recuperación
+            var emailBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;'>
+                    <div style='background-color: #00346F; padding: 20px; text-align: center;'>
+                        <h1 style='color: white; margin: 0; font-size: 24px;'>Sistema Web-TIC</h1>
+                    </div>
+                    <div style='padding: 30px; color: #333;'>
+                        <h2 style='color: #00346F; margin-top: 0;'>Cuenta Desbloqueada</h2>
+                        <p>Hola {user.FirstName},</p>
+                        <p>El administrador del sistema ha desbloqueado tu cuenta institucional.</p>
+                        <p>Por motivos de seguridad, es necesario que restablezcas tu contraseña antes de volver a ingresar. Haz clic en el siguiente botón para crear una nueva:</p>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <a href='{resetLink}' style='background-color: #00346F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Restablecer Contraseña</a>
+                        </div>
+                        <p style='font-size: 12px; color: #6b7280; margin-top: 30px;'>Si tienes algún inconveniente, contacta al administrador.</p>
+                    </div>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email!, "Acceso Restaurado", emailBody);
+
+            // 4. Auditoría
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "System";
+            await _auditService.LogEventAsync("UNLOCK_USER", currentUserId, ipAddress, $"Desbloqueó al usuario {user.Email} y envió enlace de recuperación");
+
+            return Ok(new { message = "Cuenta desbloqueada. Se ha enviado un correo al usuario para que recupere su contraseña." });
         }
     }
 }

@@ -7,6 +7,7 @@ namespace WebTIC.API.Models.DTOs
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public bool IsLockedOut { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
 
