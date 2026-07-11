@@ -14,7 +14,7 @@ export interface DashboardStats {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:5080/api/dashboard';
+  private apiUrl = '/api/dashboard';
 
   constructor(private http: HttpClient) { }
 

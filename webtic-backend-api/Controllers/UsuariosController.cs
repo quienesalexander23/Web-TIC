@@ -133,7 +133,15 @@ namespace WebTIC.API.Controllers
                 <p>Por tu seguridad, te recomendamos restablecer esta contraseña desde la pantalla de inicio de sesión utilizando la opción '¿Olvidaste tu contraseña?'.</p>
             ";
 
-            await _emailService.SendEmailAsync(user.Email, "Credenciales de Acceso - WebTIC", emailBody);
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email, "Credenciales de Acceso - WebTIC", emailBody);
+            }
+            catch (Exception ex)
+            {
+                // No bloquear la creación del usuario si el proveedor de correo falla temporalmente.
+                Console.WriteLine($"[EmailService] Envío de credenciales falló para {user.Email}: {ex.Message}");
+            }
 
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
             var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "System";
@@ -217,7 +225,15 @@ namespace WebTIC.API.Controllers
                     </div>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email!, "Acceso Restaurado", emailBody);
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email!, "Acceso Restaurado", emailBody);
+            }
+            catch (Exception ex)
+            {
+                // No bloquear el desbloqueo de la cuenta si el proveedor de correo falla temporalmente.
+                Console.WriteLine($"[EmailService] Envío de notificación de desbloqueo falló para {user.Email}: {ex.Message}");
+            }
 
             // 4. Auditoría
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";

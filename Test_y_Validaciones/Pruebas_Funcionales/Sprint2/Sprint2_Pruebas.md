@@ -86,8 +86,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Modificar correo</td>
         <td style="padding: 8px; border: 1px solid black;">email enviado en PUT</td>
         <td style="padding: 8px; border: 1px solid black;">HTTP 400</td>
-        <td style="padding: 8px; border: 1px solid black;">Rechazo exitoso</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">HTTP 200 — el campo email es ignorado silenciosamente (no existe en el DTO), no se produce un rechazo explícito</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
     </tr>
     <tr style="background-color: #ffffff; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-09</td>
@@ -113,8 +113,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Registro de auditoría CRUD</td>
         <td style="padding: 8px; border: 1px solid black;">Eventos de CP2-01 a 10</td>
         <td style="padding: 8px; border: 1px solid black;">Eventos registrados</td>
-        <td style="padding: 8px; border: 1px solid black;">Log correcto</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">CREATE_USER y UPDATE_USER se registran correctamente; el toggle de activar/desactivar cuenta (CP2-09/10) no genera ningún registro de auditoría</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-12</td>
@@ -167,8 +167,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Visibilidad directiva *appHasRole</td>
         <td style="padding: 8px; border: 1px solid black;">Sesión simultánea</td>
         <td style="padding: 8px; border: 1px solid black;">Controles ocultos</td>
-        <td style="padding: 8px; border: 1px solid black;">UI adaptada</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">Home/Roles/Audit/Settings se ocultan correctamente para roles no-admin; la página de Usuarios y sus controles (crear/editar/desactivar) NO están protegidos por la directiva y se muestran completos a cualquier rol autenticado</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-18</td>
@@ -315,11 +315,11 @@ Este escenario funcional se ejecutó insertando los parámetros `Nombre actualiz
 
 **Historia de Usuario Relacionada:** HU-04
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `email enviado en PUT` para certificar el comportamiento esperado del sistema (HTTP 400). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Rechazo exitoso) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se envió una petición `PUT /api/usuarios/{id}` incluyendo un campo `email` con un valor distinto. El resultado real fue **HTTP 200**, no HTTP 400 como se documentaba originalmente. Se confirmó mediante consulta posterior que el correo del usuario **no cambió** — la protección funciona, pero por un mecanismo distinto al descrito.
 
-**Análisis de Seguridad y Desarrollo:**
-> El DTO del backend ignora la propiedad Email (Inmutable) impidiendo la reasignación no autorizada.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> `UpdateUsuarioDto` (en `Models/DTOs/UserDTOs.cs`) no declara una propiedad `Email`. El model binding de ASP.NET Core simplemente ignora cualquier campo `email` presente en el JSON entrante; no existe una validación explícita que lo rechace con un código de error. El efecto de seguridad final es el mismo (el correo es inmutable vía este endpoint), pero no es un "rechazo" en el sentido de una regla de validación activa — es la ausencia del campo en el contrato de datos.
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
@@ -369,11 +369,11 @@ Este escenario funcional se ejecutó insertando los parámetros `estado: Activo`
 
 **Historia de Usuario Relacionada:** HU-04
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `Eventos de CP2-01 a 10` para certificar el comportamiento esperado del sistema (Eventos registrados). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Log correcto) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se ejecutaron en secuencia creación, edición, desactivación, reactivación y cambio de rol de un usuario real, y se consultó `GET /api/audit` para confirmar la traza. `CREATE_USER` y `UPDATE_USER` quedaron correctamente registrados con IP, timestamp y detalle. **El endpoint `PATCH /api/usuarios/{id}/estado` (usado para activar/desactivar cuentas) no invoca a `IAuditService` y por lo tanto no genera ningún registro** — es la única operación de gestión de usuarios sin trazabilidad.
 
-**Análisis de Seguridad y Desarrollo:**
-> SaveChangeAsync() interceptado; la tabla de Audit Logs registra correctamente la IP, Timestamp y Administrador.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> `UsuariosController.ToggleEstadoUsuario` actualiza `IsActive` y llama `_userManager.UpdateAsync(user)` pero no incluye una llamada a `_auditService.LogEventAsync(...)`, a diferencia de `CreateUsuario`, `UpdateUsuario` y `UnlockUsuario`, que sí la tienen. Se recomienda agregar el registro `TOGGLE_STATUS` para mantener consistencia con el resto del módulo.
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
@@ -477,11 +477,11 @@ Este escenario funcional se ejecutó insertando los parámetros `Rol Miembro CPG
 
 **Historia de Usuario Relacionada:** HU-05
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `Sesión simultánea` para certificar el comportamiento esperado del sistema (Controles ocultos). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (UI adaptada) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se inició sesión real como Docente y se inspeccionó el sidebar renderizado. Los enlaces **Home, Roles, Audit Log y Settings se ocultan correctamente** (decorados con `*appHasRole="['Administrador']"` en `dashboard.component.html`). Sin embargo, el enlace **"Users" y la página completa de gestión de usuarios (incluyendo el botón "+ Crear Usuario") no tienen la directiva aplicada** — un Docente ve la interfaz de administración de usuarios completa, aunque las peticiones de datos subyacentes fallan con HTTP 403 (confirmado en consola: "Error fetching users", "Error fetching roles").
 
-**Análisis de Seguridad y Desarrollo:**
-> El DOM de Angular destruye o renderiza botones dependiendo de si el token desencriptado posee el Claim esperado.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> La directiva `HasRoleDirective` (`shared/directives/has-role.directive.ts`) funciona correctamente donde se aplica: decodifica el JWT en el cliente y compara el claim `role` contra la lista permitida. El hallazgo no es un defecto de la directiva sino de **cobertura**: no fue aplicada al enlace "Users" ni a los controles internos de `user-list.component.html`. No representa una brecha de seguridad real (el backend rechaza correctamente las operaciones vía RBAC), pero sí una inconsistencia de UX que debería corregirse agregando `*appHasRole="['Administrador']"` a esos elementos.
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">

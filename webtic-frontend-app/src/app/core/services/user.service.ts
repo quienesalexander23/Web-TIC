@@ -36,7 +36,7 @@ export interface UpdateUsuarioDto {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:5080/api/usuarios';
+  private apiUrl = '/api/usuarios';
 
   constructor(private http: HttpClient) { }
 
@@ -69,10 +69,10 @@ export class UserService {
   }
 
   getMyProfile(): Observable<UsuarioDto> {
-    return this.http.get<UsuarioDto>('http://localhost:5080/api/profile/me');
+    return this.http.get<UsuarioDto>('/api/profile/me');
   }
 
   updateMyProfile(dto: { firstName: string, lastName: string }): Observable<any> {
-    return this.http.put('http://localhost:5080/api/profile/me', dto);
+    return this.http.put('/api/profile/me', dto);
   }
 }

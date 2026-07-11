@@ -103,10 +103,18 @@ namespace WebTIC.API.Controllers
                     </div>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email!, "Tu código de acceso", emailBody);
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email!, "Tu código de acceso", emailBody);
+            }
+            catch (Exception ex)
+            {
+                // No bloquear el login si el proveedor de correo falla temporalmente.
+                Console.WriteLine($"[EmailService] Envío de código 2FA falló para {user.Email}: {ex.Message}");
+            }
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 Requires2FA = true,
                 Email = user.Email,
                 Message = "Se ha enviado un código de seguridad a su correo."
@@ -154,7 +162,7 @@ namespace WebTIC.API.Controllers
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            
+
             // Construimos la URL del Frontend para recuperar contraseña
             var encodedToken = Uri.EscapeDataString(token);
             var resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
@@ -178,7 +186,15 @@ namespace WebTIC.API.Controllers
                     </div>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email, "Recuperación de Contraseña", emailBody);
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email, "Recuperación de Contraseña", emailBody);
+            }
+            catch (Exception ex)
+            {
+                // No bloquear el flujo de recuperación si el proveedor de correo falla temporalmente.
+                Console.WriteLine($"[EmailService] Envío de enlace de recuperación falló para {user.Email}: {ex.Message}");
+            }
 
             return Ok(new { Message = "Si el correo existe y está activo, se ha enviado un enlace de recuperación." });
         }

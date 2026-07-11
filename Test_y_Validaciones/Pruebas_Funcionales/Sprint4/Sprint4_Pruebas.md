@@ -4,6 +4,8 @@
 
 En esta sección se presenta la matriz completa de los casos de prueba ejecutados durante este Sprint.
 
+> **Nota de verificación (2026-07-11):** los 10 casos de esta matriz comparten título genérico ("Dashboard #N"). Se realizó una verificación funcional completa del endpoint `/api/dashboard/stats` contra el sistema real; ver `INFORME_VERIFICACION_QA.md` para el detalle. Resumen: los datos devueltos son correctos y reflejan el estado real de la base de datos, y el acceso está correctamente restringido a Administrador. Se midió una latencia real de **1.3–4.5 segundos** (no "<500ms" como indica CP4-08), causada por un patrón N+1 de consultas en `DashboardController` (una consulta por cada rol) sumado a la latencia de red hacia Supabase. Tampoco se encontró ninguna librería de gráficos en el frontend pese a la "gráfica de actividad" descrita en la Figura 2.14 de la tesis.
+
 <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; border: 2px solid black; font-size: 14px;">
     <tr style="background-color: #000000; color: #ffffff;">
         <th colspan="7" style="padding: 10px; border: 1px solid black;">Matriz de Pruebas: Pruebas Funcionales del Sprint 4</th>

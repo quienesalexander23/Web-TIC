@@ -4,6 +4,8 @@
 
 En esta sección se presenta la matriz completa de los casos de prueba ejecutados durante este Sprint.
 
+> **Nota de verificación (2026-07-11):** los 18 casos de esta matriz comparten título y descripción técnica genéricos ("Transacción #N"). Se realizó una verificación funcional completa del módulo de auditoría contra el sistema real (no caso por caso); ver `INFORME_VERIFICACION_QA.md` para el detalle. Resumen: el registro automático, el orden cronológico, la inmutabilidad y la restricción de acceso a Administrador se confirmaron correctos. Se detectó que el endpoint de activar/desactivar cuenta no genera registro de auditoría, y que el módulo no tiene exportación CSV ni filtros pese a lo descrito en la Figura 2.12 de la tesis.
+
 <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; border: 2px solid black; font-size: 14px;">
     <tr style="background-color: #000000; color: #ffffff;">
         <th colspan="7" style="padding: 10px; border: 1px solid black;">Matriz de Pruebas: Pruebas Funcionales del Sprint 3</th>

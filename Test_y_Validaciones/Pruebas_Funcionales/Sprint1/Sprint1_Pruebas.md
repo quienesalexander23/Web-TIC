@@ -122,8 +122,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Ruta protegida post-logout</td>
         <td style="padding: 8px; border: 1px solid black;">/admin/usuarios</td>
         <td style="padding: 8px; border: 1px solid black;">Redirección a Login</td>
-        <td style="padding: 8px; border: 1px solid black;">Redirección ejecutada</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">Sin redirección — no existe un route guard en `app.routes.ts`; el shell de la página se renderiza vacío mientras las llamadas de datos reciben HTTP 401 del backend</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #f8d7da;">Fallido</td>
     </tr>
     <tr style="background-color: #ffffff; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP1-13</td>
@@ -131,8 +131,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Uso de token en API post-logout</td>
         <td style="padding: 8px; border: 1px solid black;">GET /api con token viejo</td>
         <td style="padding: 8px; border: 1px solid black;">HTTP 401</td>
-        <td style="padding: 8px; border: 1px solid black;">HTTP 401 retornado</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">HTTP 200 — el token sigue siendo válido y funcional hasta su expiración natural (60 min); no existe blacklist/revocación de tokens en el backend</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #f8d7da;">Fallido</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP1-14</td>
@@ -183,10 +183,10 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP1-19</td>
         <td style="padding: 8px; border: 1px solid black;">HU-03</td>
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Token expirado</td>
-        <td style="padding: 8px; border: 1px solid black;">Token > 24h</td>
+        <td style="padding: 8px; border: 1px solid black;">Token > 2 min (valor real configurado; no 24h)</td>
         <td style="padding: 8px; border: 1px solid black;">Enlace expirado</td>
-        <td style="padding: 8px; border: 1px solid black;">Rechazado</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
+        <td style="padding: 8px; border: 1px solid black;">Rechazado — verificado esperando el tiempo real (~6.5 min) y reintentando el token</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP1-20</td>
@@ -405,11 +405,11 @@ Este escenario funcional se ejecutó insertando los parámetros `Clic en Cerrar 
 
 **Historia de Usuario Relacionada:** HU-02
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `/admin/usuarios` para certificar el comportamiento esperado del sistema (Redirección a Login). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Redirección ejecutada) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se cerró sesión y se navegó directamente a `/admin/users`. La URL **no redirige a `/login`**: la página se queda en `/admin/users` y renderiza el shell del componente (sidebar, botones, tabla vacía) sin ningún control de acceso a nivel de ruta.
 
-**Análisis de Seguridad y Desarrollo:**
-> El AuthGuard de Angular evalúa el estado del servicio y bloquea el ruteo interno del DOM.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> `app.routes.ts` no define ningún `canActivate` guard en las rutas bajo `/admin`. No existe un `AuthGuard` en el proyecto. La protección real recae únicamente en que las llamadas HTTP a `/api/usuarios` y `/api/RolePermissions/roles` devuelven HTTP 401 sin token, por lo que no hay fuga de datos, pero la experiencia de usuario documentada (redirección automática) no ocurre. Se recomienda implementar un `CanActivateFn` que verifique la presencia de un token en `sessionStorage` antes de permitir el acceso a las rutas `/admin/*`.
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
@@ -423,11 +423,11 @@ Este escenario funcional se ejecutó insertando los parámetros `/admin/usuarios
 
 **Historia de Usuario Relacionada:** HU-02
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `GET /api con token viejo` para certificar el comportamiento esperado del sistema (HTTP 401). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 401 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se guardó el JWT emitido durante un login válido, se cerró sesión desde la interfaz, y se reenvió ese mismo token (capturado antes del logout) en un `GET /api/usuarios` vía `fetch` directo. El resultado real fue **HTTP 200 con datos completos**, no HTTP 401.
 
-**Análisis de Seguridad y Desarrollo:**
-> Capa de seguridad backend valida el JWT en cada petición contra la Blacklist de Redis o memoria, detectando tokens revocados.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> No existe ninguna blacklist de tokens (ni en Redis, ni en memoria, ni en base de datos) en el backend actual. El middleware de JWT (`Program.cs`) solo valida firma, emisor, audiencia y tiempo de expiración (`ValidateLifetime = true`) — no consulta ningún estado de revocación. El logout es puramente del lado del cliente (borra `sessionStorage`); un token capturado antes del logout (por ejemplo, por un ataque XSS o de red) sigue siendo válido y utilizable durante el resto de su vigencia de 60 minutos. Esta es una limitación de seguridad real que debería documentarse o mitigarse (por ejemplo, con un token de corta duración + refresh token, o una tabla de tokens revocados).
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
@@ -531,11 +531,11 @@ Este escenario funcional se ejecutó insertando los parámetros `Token previo` p
 
 **Historia de Usuario Relacionada:** HU-03
 
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `Token > 24h` para certificar el comportamiento esperado del sistema (Enlace expirado). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Rechazado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
+Se solicitó un token de recuperación real, se esperaron ~6.5 minutos reales, y se intentó usarlo. El token fue rechazado (`InvalidToken`), confirmando que el mecanismo de expiración funciona. Sin embargo, el dato de entrada documentado ("Token > 24h") no corresponde a la configuración real del sistema.
 
-**Análisis de Seguridad y Desarrollo:**
-> Los DataProtectionTokenProviders garantizan la expiración criptográfica automática del string de recuperación.
+**Análisis de Seguridad y Desarrollo (actualizado):**
+> `Program.cs` configura `DataProtectionTokenProviderOptions.TokenLifespan = TimeSpan.FromMinutes(2)` de forma global — este valor aplica tanto al código 2FA como al token de recuperación de contraseña (ambos usan el proveedor de tokens "Default" de ASP.NET Core Identity). El mecanismo de expiración criptográfica sí funciona correctamente, pero la ventana real es de **2 minutos**, no de 24 horas. Si se desea una ventana de recuperación de contraseña más larga que la del código 2FA, se debe configurar un `DataProtectionTokenProviderOptions` con nombre distinto para cada propósito.
 
 **Evidencia Visual:**
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">

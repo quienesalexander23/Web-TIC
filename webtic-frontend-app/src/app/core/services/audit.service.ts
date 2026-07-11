@@ -16,7 +16,7 @@ export interface AuditLogDto {
   providedIn: 'root'
 })
 export class AuditService {
-  private apiUrl = 'http://localhost:5080/api/audit';
+  private apiUrl = '/api/audit';
 
   constructor(private http: HttpClient) { }
 

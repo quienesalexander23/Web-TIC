@@ -22,7 +22,7 @@ export interface RoleDto {
   providedIn: 'root'
 })
 export class RoleService {
-  private apiUrl = 'http://localhost:5080/api/RolePermissions';
+  private apiUrl = '/api/RolePermissions';
 
   constructor(private http: HttpClient) { }
 
