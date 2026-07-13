@@ -77,6 +77,16 @@
   line-height: 1;
 }
 
+.activity-chart-card {
+  margin-bottom: 2rem;
+}
+
+.activity-chart-card h2 {
+  font-size: 1.25rem;
+  color: #1a1a2e;
+  margin-top: 0;
+}
+
 .bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

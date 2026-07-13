@@ -42,9 +42,15 @@
       </div>
     </div>
 
+    <!-- Gráfica de Actividad (últimos 7 días) -->
+    <div class="glass-card activity-chart-card">
+      <h2>Actividad de los Últimos 7 Días</h2>
+      <app-activity-chart [data]="stats.activityByDay"></app-activity-chart>
+    </div>
+
     <!-- Bottom Row (Roles & Activity) -->
     <div class="bottom-row">
-      
+
       <!-- Distribución de Roles -->
       <div class="glass-card roles-card">
         <h2>Distribución por Roles</h2>

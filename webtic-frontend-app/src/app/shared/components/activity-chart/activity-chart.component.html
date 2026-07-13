@@ -1,0 +1,24 @@
+<svg
+  *ngIf="bars.length > 0; else noData"
+  [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+  class="activity-chart">
+  <line [attr.x1]="0" [attr.y1]="chartHeight - 20" [attr.x2]="chartWidth" [attr.y2]="chartHeight - 20" class="axis-line" />
+
+  <g *ngFor="let bar of bars">
+    <rect
+      [attr.x]="bar.x"
+      [attr.y]="bar.y"
+      [attr.width]="bar.width"
+      [attr.height]="bar.height"
+      class="bar"
+      rx="3">
+      <title>{{ bar.count }} evento(s)</title>
+    </rect>
+    <text [attr.x]="bar.x + bar.width / 2" [attr.y]="bar.y - 6" text-anchor="middle" class="bar-count">{{ bar.count }}</text>
+    <text [attr.x]="bar.x + bar.width / 2" [attr.y]="chartHeight - 4" text-anchor="middle" class="bar-label">{{ bar.label }}</text>
+  </g>
+</svg>
+
+<ng-template #noData>
+  <p class="no-data-text">Sin actividad registrada en los últimos 7 días.</p>
+</ng-template>

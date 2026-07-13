@@ -93,6 +93,25 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+
+    // Rechazar tokens revocados por logout explícito (blacklist por jti).
+    // Cierra el hallazgo CP1-13: antes de este cambio, un token capturado antes
+    // del logout seguía siendo válido hasta su expiración natural.
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var jti = context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value;
+            if (string.IsNullOrEmpty(jti)) return;
+
+            var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+            var isRevoked = await db.RevokedTokens.AnyAsync(t => t.Jti == jti);
+            if (isRevoked)
+            {
+                context.Fail("Token revocado.");
+            }
+        }
+    };
 });
 
 builder.Services.AddAuthorization(options =>
@@ -138,3 +157,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Expuesto para WebApplicationFactory<Program> en WebTIC.API.Tests
+public partial class Program { }

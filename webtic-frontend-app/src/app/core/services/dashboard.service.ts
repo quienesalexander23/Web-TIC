@@ -2,12 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface ActivityByDay {
+  date: string;
+  count: number;
+}
+
 export interface DashboardStats {
   totalUsers: number;
   activeUsers: number;
   inactiveUsers: number;
   rolesDistribution: { [key: string]: number };
   recentActivity: any[];
+  activityByDay: ActivityByDay[];
 }
 
 @Injectable({

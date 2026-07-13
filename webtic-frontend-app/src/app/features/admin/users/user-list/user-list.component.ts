@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService, UsuarioDto, CreateUsuarioDto, UpdateUsuarioDto } from '../../../../core/services/user.service';
 import { RoleService, RoleDto } from '../../../../core/services/role.service';
+import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HasRoleDirective],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })

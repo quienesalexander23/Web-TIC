@@ -261,6 +261,30 @@ namespace WebTIC.API.Data.Migrations
                     b.ToTable("LogAuditoria");
                 });
 
+            modelBuilder.Entity("WebTIC.API.Models.RevokedToken", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Jti")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RevokedTokens");
+                });
+
             modelBuilder.Entity("WebTIC.API.Models.SystemPermission", b =>
                 {
                     b.Property<string>("Id")

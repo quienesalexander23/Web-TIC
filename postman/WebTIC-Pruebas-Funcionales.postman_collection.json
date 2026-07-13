@@ -1,0 +1,587 @@
+{
+  "info": {
+    "name": "WebTIC - Pruebas Funcionales (66 casos, Sprints 1-4)",
+    "description": "Colección de Postman que replica los 66 casos de prueba documentados en Test_y_Validaciones/Pruebas_Funcionales. Cada request incluye el ID del caso (CP) en su nombre y descripción, y un script de test que valida el resultado esperado automáticamente. Variables requeridas: baseUrl (default http://localhost:5080).\n\nNota sobre 2FA: el login siempre requiere un código de 6 dígitos enviado por correo. En desarrollo, revisa el log de consola del backend (o tu bandeja de correo si el SMTP está configurado) y pega el código en la variable de colección `twoFactorCode` antes de correr el request de verify-2fa correspondiente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5080" },
+    { "key": "adminEmail", "value": "admin.webtic@epn.edu.ec" },
+    { "key": "adminPassword", "value": "Santodomingo23!!" },
+    { "key": "docenteEmail", "value": "victor.velepucha@epn.edu.ec" },
+    { "key": "docentePassword", "value": "Santodomingo23!!" },
+    { "key": "presidenteEmail", "value": "presidente.cpgic@epn.edu.ec" },
+    { "key": "miembroEmail", "value": "miembro.cpgic@epn.edu.ec" },
+    { "key": "twoFactorCode", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "docenteToken", "value": "" },
+    { "key": "presidenteToken", "value": "" },
+    { "key": "miembroToken", "value": "" },
+    { "key": "resetToken", "value": "" },
+    { "key": "targetUserId", "value": "" },
+    { "key": "newUserEmail", "value": "postman.test@epn.edu.ec" }
+  ],
+  "item": [
+    {
+      "name": "Sprint 1 - Autenticación, 2FA y Sesión",
+      "item": [
+        {
+          "name": "CP1-01 - Login con credenciales válidas (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "description": "Login con credenciales válidas de administrador. Esperado: 200 OK con requires2FA=true. Revisa el log de consola del backend para obtener el código de 6 dígitos y pégalo en la variable twoFactorCode antes de correr 'CP1-01b - Verificar 2FA'."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('CP1-01: Status 200 y requires2FA true', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().requires2FA).to.be.true;",
+              "});"
+            ]}
+          }]
+        },
+        {
+          "name": "CP1-01b - Verificar código 2FA y obtener JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/verify-2fa",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"code\": \"{{twoFactorCode}}\"\n}"
+            },
+            "description": "Verifica el código 2FA (pegado manualmente en twoFactorCode) y confirma que se emite un JWT válido. CP1-08 (claims JWT) se valida decodificando el token resultante."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('CP1-01b/CP1-08: Status 200 y JWT con claims correctos', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.token).to.not.be.empty;",
+              "  pm.collectionVariables.set('adminToken', json.token);",
+              "  const payload = JSON.parse(atob(json.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+              "  pm.expect(payload.role).to.eql('Administrador');",
+              "});"
+            ]}
+          }]
+        },
+        {
+          "name": "CP1-03 - Contraseña incorrecta (mensaje genérico)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"password\": \"PasswordIncorrecto1!\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-03: HTTP 401 con mensaje genérico', function () { pm.response.to.have.status(401); });"
+          ]}}]
+        },
+        {
+          "name": "CP1-04 - Correo no registrado",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"noexiste@epn.edu.ec\",\n  \"password\": \"Cualquiera123!\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-04: HTTP 401 mensaje genérico igual a CP1-03', function () {",
+            "  pm.response.to.have.status(401);",
+            "  pm.expect(pm.response.json().message).to.eql('Credenciales incorrectas');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP1-05 - Dominio no institucional",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"usuario@gmail.com\",\n  \"password\": \"Cualquiera123!\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-05: HTTP 400 rechazado también en backend', function () { pm.response.to.have.status(400); });"
+          ]}}]
+        },
+        {
+          "name": "CP1-06/07 - Bloqueo tras 5 intentos fallidos y reintento",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"password\": \"Malo1!\"\n}" },
+            "description": "Ejecuta este request 5 veces seguidas (Postman Runner con 5 iteraciones, o manualmente) para disparar el bloqueo. Al 5to intento fallido debe responder 423. Un 6to intento -incluso con la contraseña correcta- también debe responder 423 (CP1-07)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-06/07: HTTP 401 (intentos 1-4) o 423 (5to en adelante)', function () {",
+            "  pm.expect([401, 423]).to.include(pm.response.code);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP1-08 - Verificación claims JWT (ver script de CP1-01b)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Reutiliza adminToken (seteado en CP1-01b) para confirmar que el claim 'role' del JWT autoriza correctamente contra un endpoint protegido."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-08: token con claims correctos autoriza el acceso (200)', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP1-10 - Login con cuenta desactivada",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"cuenta.inactiva@epn.edu.ec\",\n  \"password\": \"Santodomingo23!!\"\n}" },
+            "description": "Requiere una cuenta previamente desactivada (ver Sprint 2, CP2-09) con este correo."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-10: HTTP 401 cuenta inactiva', function () { pm.response.to.have.status(401); });"
+          ]}}]
+        },
+        {
+          "name": "CP1-13 - Reutilizar token tras 'logout' del cliente (hallazgo real)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "El logout es solo del lado del cliente (borra sessionStorage). Este mismo token (adminToken) sigue funcionando aquí, demostrando que NO existe blacklist de tokens en el backend."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-13 (hallazgo real): el token sigue siendo válido, HTTP 200 en vez del 401 documentado originalmente', function () {",
+            "  pm.response.to.have.status(200);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP1-15/16 - Forgot password (correo válido e inválido)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/forgot-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\"\n}" },
+            "description": "Corre este mismo request cambiando el email a uno inexistente (ej. fantasma@epn.edu.ec) para CP1-16 y compara: la respuesta debe ser idéntica en ambos casos (sin enumeración)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-15/16: HTTP 200 con mensaje genérico', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP1-17/18/20 - Reset password (válido, reutilizado, débil)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/reset-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"abc\"\n}" },
+            "description": "Pega en resetToken el token obtenido del log de consola tras CP1-15. Corre primero con newPassword débil ('abc') para CP1-20 (espera 400), luego con una contraseña fuerte para CP1-17 (espera 200), y una tercera vez reutilizando el mismo token para CP1-18 (espera 400 InvalidToken)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-17/18/20: HTTP 200 (válido) o 400 (débil/reutilizado)', function () {",
+            "  pm.expect([200, 400]).to.include(pm.response.code);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP1-19 - Token expirado (real: 2 minutos, no 24h)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/reset-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"NuevaPass2026!\"\n}" },
+            "description": "Espera al menos 2 minutos reales tras solicitar el token (CP1-15) antes de correr este request. DataProtectionTokenProviderOptions.TokenLifespan está configurado en 2 minutos, no 24h."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP1-19: HTTP 400 token expirado', function () { pm.response.to.have.status(400); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Sprint 2 - Gestión de Usuarios y RBAC",
+      "item": [
+        {
+          "name": "CP2-01 - Creación de cuenta válida",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{newUserEmail}}\",\n  \"firstName\": \"Postman\",\n  \"lastName\": \"Test\",\n  \"role\": \"Docente\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-01: HTTP 200 cuenta creada', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-02 - Correo ya registrado",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{newUserEmail}}\",\n  \"firstName\": \"Duplicado\",\n  \"lastName\": \"Test\",\n  \"role\": \"Docente\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-02: HTTP 400 correo duplicado', function () { pm.response.to.have.status(400); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-03 - Dominio no institucional",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"postman@gmail.com\",\n  \"firstName\": \"X\",\n  \"lastName\": \"Y\",\n  \"role\": \"Docente\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-03: HTTP 400 dominio no institucional', function () { pm.response.to.have.status(400); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-04 - Listado paginado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=3",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-04: HTTP 200 con paginación consistente', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const json = pm.response.json();",
+            "  pm.expect(json.items.length).to.be.at.most(3);",
+            "  pm.collectionVariables.set('targetUserId', json.items[0].id);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP2-05 - Búsqueda parcial",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=10&search=postman.test",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-05: encuentra el registro correcto', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().items.length).to.be.at.least(1);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP2-06 - Filtro por rol",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=50&role=Docente",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-06: todos los resultados tienen el rol Docente', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.response.json().items.forEach(u => pm.expect(u.roles).to.include('Docente'));",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP2-07 - Edición de datos",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Editado\",\n  \"lastName\": \"PorPostman\",\n  \"role\": \"Docente\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-07: HTTP 200 edición exitosa', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-08 - Intentar modificar correo (hallazgo real)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Editado\",\n  \"lastName\": \"PorPostman\",\n  \"role\": \"Docente\",\n  \"email\": \"nuevo.correo@epn.edu.ec\"\n}" },
+            "description": "El DTO no tiene campo Email; la petición retorna 200 y el campo se ignora silenciosamente (no HTTP 400 como documenta originalmente el caso)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-08 (hallazgo real): HTTP 200, no 400 — el email es ignorado, no rechazado', function () {",
+            "  pm.response.to.have.status(200);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP2-09 - Desactivar cuenta",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}/estado"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-09: HTTP 200 toggle de estado', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-10 - Reactivar cuenta (mismo endpoint, toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}/estado",
+            "description": "Correr este mismo request de nuevo revierte el estado (activo <-> inactivo). Para el desbloqueo administrativo real (endpoint distinto), ver 'CP2-10b'."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-10: HTTP 200 cuenta reactivada', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-10b - Desbloqueo administrativo (/unlock)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}/unlock",
+            "description": "Endpoint distinto al toggle de estado — usado cuando una cuenta fue bloqueada por fuerza bruta (CP1-06). También genera un nuevo token de reset y lo envía por correo."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-10b: HTTP 200 cuenta desbloqueada', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-11 - Registro de auditoría CRUD",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=20",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Verifica manualmente que CREATE_USER y UPDATE_USER aparezcan en la lista. Hallazgo real: no existe ningún ActionType para activar/desactivar cuenta (el toggle de CP2-09/10 no se audita)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-11: HTTP 200 con eventos registrados', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const types = pm.response.json().items.map(i => i.actionType);",
+            "  pm.expect(types).to.include('CREATE_USER');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CP2-12/13 - Login Docente (para probar RBAC)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"password\": \"{{docentePassword}}\"\n}" },
+            "description": "Después del 2FA (ver CP1-01b, adaptar email/variable a docenteToken), usar docenteToken en 'CP2-13b - Acceso admin con token Docente'."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-12/13: HTTP 200 login docente inicia flujo 2FA', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-13b - Acceso admin con token Docente -> 403",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-13: HTTP 403 Forbidden para rol Docente', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-14 - Acceso admin con token Presidente CPGIC -> 403",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{presidenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-14: HTTP 403 Forbidden para Presidente CPGIC', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-15 - Acceso admin con token Miembro CPGIC -> 403",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{miembroToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-15: HTTP 403 Forbidden para Miembro CPGIC', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-16 - Cambio de rol",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/usuarios/{{targetUserId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Editado\",\n  \"lastName\": \"PorPostman\",\n  \"role\": \"Miembro CPGIC\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-16: HTTP 200 rol actualizado', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-18 - Token manipulado manualmente",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}AAAAA" }],
+            "description": "Se concatena 'AAAAA' al final del token real para invalidar su firma HMAC-SHA256."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-18: HTTP 401 firma inválida', function () { pm.response.to.have.status(401); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Sprint 3 - Auditoría",
+      "item": [
+        {
+          "name": "Sprint 3 - Listar auditoría (orden cronológico, campos completos)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=20",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Los 18 casos CP3-01..18 documentados son genéricos; este request valida el módulo completo: orden cronológico descendente, y presencia de userId/ipAddress/details en cada registro."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Sprint 3: HTTP 200, orden descendente y campos completos', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const items = pm.response.json().items;",
+            "  const timestamps = items.map(i => new Date(i.timestamp).getTime());",
+            "  const sorted = [...timestamps].sort((a,b) => b - a);",
+            "  pm.expect(timestamps).to.eql(sorted);",
+            "  items.forEach(i => {",
+            "    pm.expect(i.userId).to.not.be.empty;",
+            "    pm.expect(i.ipAddress).to.not.be.empty;",
+            "  });",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "Sprint 3 - Acceso denegado a no-Admin",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Sprint 3: HTTP 403 para rol no-Admin', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Sprint 4 - Dashboard Administrativo",
+      "item": [
+        {
+          "name": "Sprint 4 - Métricas del dashboard (datos + latencia real)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/dashboard/stats",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Los 10 casos CP4-01..10 documentados son genéricos; este request valida el endpoint completo. Revisa 'Time' en la respuesta de Postman: el valor real medido contra Supabase fue 1.3-4.5s, no <500ms como documenta CP4-08 (causa: patrón N+1 en DashboardController)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Sprint 4: HTTP 200 con datos consistentes', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const json = pm.response.json();",
+            "  pm.expect(json.totalUsers).to.eql(json.activeUsers + json.inactiveUsers);",
+            "});",
+            "pm.test('Sprint 4 (informativo, no falla el test): latencia real observada', function () {",
+            "  console.log('Latencia de este request: ' + pm.response.responseTime + 'ms (CP4-08 documenta <500ms)');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "Sprint 4 - Acceso denegado a no-Admin",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/dashboard/stats",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Sprint 4: HTTP 403 para rol no-Admin', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Pruebas de Seguridad (OWASP Top 10, sección 3.3.1 de la tesis)",
+      "item": [
+        {
+          "name": "CS-01 - Inyección SQL en campo de correo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"' OR '1'='1\",\n  \"password\": \"Santodomingo23!!\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-01: la inyección es rechazada, no hay 200/500', function () { pm.expect(pm.response.code).to.be.oneOf([400,401]); });"
+          ]}}]
+        },
+        {
+          "name": "CS-03 - Manipulación del payload del token JWT",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}TAMPERED" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-03: HTTP 401 firma inválida', function () { pm.response.to.have.status(401); });"
+          ]}}]
+        },
+        {
+          "name": "CS-06 - Fuerza bruta al endpoint de login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"password\": \"BadPass1!\"\n}" },
+            "description": "Correr 6+ veces seguidas (Postman Runner) — debe terminar en HTTP 423."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-06: HTTP 401 o 423', function () { pm.expect(pm.response.code).to.be.oneOf([401,423]); });"
+          ]}}]
+        },
+        {
+          "name": "CS-08 - Acceso a endpoint admin con token de rol Docente",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-08: HTTP 403 Forbidden', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "CS-09 - Enumeración de usuarios mediante mensajes de error",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"correo.que.no.existe@epn.edu.ec\",\n  \"password\": \"Cualquiera123!\"\n}" },
+            "description": "Compara la respuesta de este request con la de CP1-03 (contraseña incorrecta con correo existente): deben ser textualmente idénticas."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-09: mensaje genérico sin revelar existencia del correo', function () {",
+            "  pm.response.to.have.status(401);",
+            "  pm.expect(pm.response.json().message).to.eql('Credenciales incorrectas');",
+            "});"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

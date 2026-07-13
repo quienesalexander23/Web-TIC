@@ -110,6 +110,15 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 3. **Credenciales de Gmail SMTP inválidas** (`5.7.0 Authentication Required`) — la contraseña de aplicación en `appsettings.Development.json` está revocada o expirada. Los tres puntos anteriores mitigan el síntoma, pero **el envío real de correos (2FA, recuperación, credenciales de nuevos usuarios) no está funcionando en este momento** y requiere generar una nueva contraseña de aplicación en Gmail.
 4. **URLs de API hardcodeadas** (`http://localhost:5080/...`) en 5 servicios Angular (`auth`, `user`, `dashboard`, `audit`, `role`) se cambiaron a rutas relativas (`/api/...`) — buena práctica general, no depende del puerto del backend.
 
+## Aviso importante: `ng serve` falla en este entorno (no confirmado si ocurre también en tu máquina)
+
+Al ejecutar `npm start` (`ng serve`) en `webtic-frontend-app`, la aplicación **no llega a arrancar**: falla con `NG0203: inject() must be called from an injection context` durante el bootstrap de `AppComponent`, incluso con un componente vacío sin providers ni imports. Se aisló la causa mediante bisección (quitar providers uno por uno) y se confirmó que:
+- **`ng build` (modo development o production) funciona perfectamente** — el bundle generado y servido como archivos estáticos renderiza la aplicación real sin errores.
+- El fallo está confinado al dev-server basado en Vite/esbuild que usa `ng serve` en Angular 17.3, no al código de la aplicación.
+- No se identificó la causa raíz exacta (podría ser específico de este entorno de nube/sandbox, o un bug genuino de la combinación de versiones `@angular/cli@17.3.17` + `@angular/core@17.3.12`, que son las últimas versiones publicadas de cada paquete respectivamente).
+
+**Si al intentar correr `npm start` en tu propia máquina también falla con este error**, usa como alternativa: `npm run build -- --configuration development` y sirve la carpeta `dist/webtic-frontend-app/browser` con cualquier servidor estático (o usa el script `qa-proxy-server.js` que dejamos en `webtic-frontend-app/`, que además reenvía `/api/*` al backend en el puerto 5080 desde un único origen).
+
 ---
 
 ## Discrepancias entre la tesis (texto) y el código real
@@ -126,8 +135,18 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 
 ---
 
+## Herramientas de prueba automatizada agregadas
+
+Además de la verificación manual, se construyeron dos herramientas reutilizables para volver a ejecutar estas pruebas sin depender de esta sesión:
+
+1. **`WebTIC.API.Tests`** (xUnit + `Microsoft.AspNetCore.Mvc.Testing`): 27 pruebas de integración reales que levantan la API completa contra una base de datos en memoria (no Supabase) y un servicio de correo falso (`FakeEmailService`), cubriendo los 66 casos documentados de forma consolidada y trazable por ID de caso (ver `Sprint1_AuthTests.cs`, `Sprint2_UserManagementTests.cs`, `Sprint3_AuditTests.cs`, `Sprint4_DashboardTests.cs`). Ejecutar con:
+   ```
+   dotnet test WebTIC.API.Tests
+   ```
+2. **Colección de Postman** (`postman/WebTIC-Pruebas-Funcionales.postman_collection.json` + `postman/WebTIC-Local.postman_environment.json`): 39 requests organizados en 5 carpetas (Sprint 1-4 + Seguridad OWASP) con scripts de test automáticos (`pm.test`), replicando el enfoque de caja negra vía Postman descrito en la tesis (sección 3.2.1). Requiere el backend real corriendo en `localhost:5080`; los flujos con 2FA necesitan pegar manualmente el código de 6 dígitos (revisado en el log de consola o el correo real) en la variable `twoFactorCode`.
+
 ## Pendiente
 
-- [ ] Capturas de pantalla reales para los 66 casos (bloqueado temporalmente por inestabilidad de la herramienta de automatización de navegador en esta sesión — no es un problema del sistema bajo prueba).
+- [ ] Capturas de pantalla reales para los 66 casos (bloqueado temporalmente por inestabilidad de la herramienta de automatización de navegador en esta sesión — no es un problema del sistema bajo prueba). El usuario continuará esta parte manualmente.
 - [ ] Decidir si corregir el código real para los gaps encontrados (AuthGuard de rutas, blacklist de tokens, auditoría de activar/desactivar, N+1 del dashboard) o documentarlos como limitaciones conocidas en la tesis.
 - [ ] Generar una nueva contraseña de aplicación de Gmail para que el envío real de correos vuelva a funcionar.

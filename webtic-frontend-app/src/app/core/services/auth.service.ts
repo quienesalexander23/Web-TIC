@@ -45,6 +45,11 @@ export class AuthService {
   }
 
   logout(): void {
+    // Revocar el token en el backend (agrega su jti a la lista negra) antes de
+    // borrarlo de sessionStorage — el interceptor de auth necesita el token
+    // todavía presente para adjuntar el header Authorization a esta petición.
+    // Es "best-effort": si la llamada falla, igual limpiamos la sesión local.
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({ error: () => {} });
     sessionStorage.removeItem('token');
   }
 }

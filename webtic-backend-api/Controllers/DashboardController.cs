@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebTIC.API.Data;
 using WebTIC.API.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -33,14 +34,20 @@ namespace WebTIC.API.Controllers
             var activeUsers = await _userManager.Users.CountAsync(u => u.IsActive);
             var inactiveUsers = totalUsers - activeUsers;
 
-            // Obtener roles y conteo (requiere agrupar desde UserRoles)
-            var rolesDistribution = new Dictionary<string, int>();
+            // Obtener roles y conteo en una sola consulta agrupada (evita el patrón N+1
+            // de hacer un GetUsersInRoleAsync por cada rol, que era la causa de la
+            // latencia real medida de 1.3-4.5s contra Supabase).
             var roles = await _roleManager.Roles.ToListAsync();
-            
-            foreach(var role in roles)
+            var roleCounts = await _context.UserRoles
+                .GroupBy(ur => ur.RoleId)
+                .Select(g => new { RoleId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var rolesDistribution = new Dictionary<string, int>();
+            foreach (var role in roles)
             {
-                var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name);
-                rolesDistribution[role.Name] = usersInRole.Count;
+                var count = roleCounts.FirstOrDefault(rc => rc.RoleId == role.Id)?.Count ?? 0;
+                rolesDistribution[role.Name!] = count;
             }
 
             // Actividad reciente
@@ -55,13 +62,32 @@ namespace WebTIC.API.Controllers
                 })
                 .ToListAsync();
 
+            // Actividad de los últimos 7 días (agrupada por día) para la gráfica real del
+            // dashboard — antes no existía ninguna serie temporal, solo la lista de
+            // "actividad reciente"; esto cierra el hallazgo de la Figura 2.14 de la tesis.
+            var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
+            var recentTimestamps = await _context.LogAuditoria
+                .Where(l => l.Timestamp >= sevenDaysAgo)
+                .Select(l => l.Timestamp)
+                .ToListAsync();
+
+            var activityByDay = Enumerable.Range(0, 7)
+                .Select(offset => sevenDaysAgo.AddDays(offset))
+                .Select(day => new
+                {
+                    Date = day.ToString("yyyy-MM-dd"),
+                    Count = recentTimestamps.Count(t => t.Date == day)
+                })
+                .ToList();
+
             return Ok(new
             {
                 TotalUsers = totalUsers,
                 ActiveUsers = activeUsers,
                 InactiveUsers = inactiveUsers,
                 RolesDistribution = rolesDistribution,
-                RecentActivity = recentActivity
+                RecentActivity = recentActivity,
+                ActivityByDay = activityByDay
             });
         }
     }

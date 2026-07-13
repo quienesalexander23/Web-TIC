@@ -1,8 +1,30 @@
 <div class="audit-container" *appHasRole="['Administrador']">
-  
+
   <div class="header-section">
     <h1>Registro de Auditoría</h1>
     <p class="subtitle">Trazabilidad de eventos críticos del sistema</p>
+  </div>
+
+  <div class="filters-bar glass-panel">
+    <div class="filter-field">
+      <label for="filterActionType">Tipo de Acción</label>
+      <select id="filterActionType" [(ngModel)]="selectedActionType" (change)="applyFilters()">
+        <option value="">Todos</option>
+        <option *ngFor="let type of actionTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="filterFromDate">Desde</label>
+      <input id="filterFromDate" type="date" [(ngModel)]="fromDate" (change)="applyFilters()">
+    </div>
+    <div class="filter-field">
+      <label for="filterToDate">Hasta</label>
+      <input id="filterToDate" type="date" [(ngModel)]="toDate" (change)="applyFilters()">
+    </div>
+    <button class="btn-secondary" (click)="clearFilters()">Limpiar filtros</button>
+    <button class="btn-primary" (click)="exportToCsv()" [disabled]="isExporting">
+      @if (isExporting) { Exportando... } @else { ⬇ Exportar CSV }
+    </button>
   </div>
 
   <div *ngIf="isLoading" class="loading-state">

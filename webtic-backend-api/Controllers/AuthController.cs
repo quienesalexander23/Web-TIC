@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using WebTIC.API.Data;
 using WebTIC.API.DTOs;
 using WebTIC.API.Models;
 
@@ -18,19 +20,22 @@ namespace WebTIC.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly WebTIC.API.Services.IEmailService _emailService;
         private readonly WebTIC.API.Services.IAuditService _auditService;
+        private readonly AppDbContext _context;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration configuration,
             WebTIC.API.Services.IEmailService emailService,
-            WebTIC.API.Services.IAuditService auditService)
+            WebTIC.API.Services.IAuditService auditService,
+            AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _emailService = emailService;
             _auditService = auditService;
+            _context = context;
         }
 
         [HttpPost("login")]
@@ -149,6 +154,40 @@ namespace WebTIC.API.Controllers
                 Token = token,
                 Message = "Autenticación exitosa"
             });
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+            if (string.IsNullOrEmpty(jti))
+            {
+                return Ok(new { Message = "Sesión cerrada." });
+            }
+
+            var expClaim = User.FindFirstValue(JwtRegisteredClaimNames.Exp);
+            var expiresAt = expClaim != null && long.TryParse(expClaim, out var expUnix)
+                ? DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime
+                : DateTime.UtcNow.AddHours(1);
+
+            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "Unknown";
+
+            // Revocar el token actual agregando su jti a la lista negra: cualquier
+            // petición futura con este mismo token será rechazada (ver Program.cs,
+            // JwtBearerEvents.OnTokenValidated). Esto cierra el hallazgo CP1-13.
+            _context.RevokedTokens.Add(new RevokedToken
+            {
+                Jti = jti,
+                UserId = userId,
+                ExpiresAt = expiresAt
+            });
+            await _context.SaveChangesAsync();
+
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            await _auditService.LogEventAsync("LOGOUT", userId, ipAddress, "Cierre de sesión, token revocado.");
+
+            return Ok(new { Message = "Sesión cerrada correctamente." });
         }
 
         [HttpPost("forgot-password")]

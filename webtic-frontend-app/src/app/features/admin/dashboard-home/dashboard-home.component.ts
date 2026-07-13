@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, KeyValuePipe } from '@angular/common';
 import { DashboardService, DashboardStats } from '../../../core/services/dashboard.service';
+import { ActivityChartComponent } from '../../../shared/components/activity-chart/activity-chart.component';
 
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [CommonModule, KeyValuePipe],
+  imports: [CommonModule, KeyValuePipe, ActivityChartComponent],
   templateUrl: './dashboard-home.component.html',
   styleUrls: ['./dashboard-home.component.css']
 })

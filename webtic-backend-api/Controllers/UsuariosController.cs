@@ -189,6 +189,11 @@ namespace WebTIC.API.Controllers
             user.IsActive = !user.IsActive; // Toggle lógico
             await _userManager.UpdateAsync(user);
 
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "System";
+            var accion = user.IsActive ? "activó" : "desactivó";
+            await _auditService.LogEventAsync("TOGGLE_STATUS", currentUserId, ipAddress, $"El administrador {accion} al usuario {user.Email}");
+
             return Ok(new { message = $"Usuario {(user.IsActive ? "activado" : "desactivado")} exitosamente", isActive = user.IsActive });
         }
 
