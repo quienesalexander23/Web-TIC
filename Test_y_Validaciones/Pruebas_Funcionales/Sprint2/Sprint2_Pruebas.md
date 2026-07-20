@@ -524,25 +524,3 @@ Se inició sesión real como Docente y se inspeccionó el sidebar renderizado. L
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-17]</p>
     <img src="../Evidencias/evidencia_cp2_17.png" alt="Evidencia CP2-17" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
-
----
-
-### CP2-18: Token manipulado manualmente
-
-**Historia de Usuario Relacionada:** HU-05
-
-**Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `Token falso con rol Admin` para certificar el comportamiento esperado del sistema (Firma JWT inválida). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 401 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
-
-**Análisis de Seguridad y Desarrollo:**
-
-> Cualquier alteración en la porción de payload de un JWT rompe su hash HMAC-SHA256, la API lo rechaza instantáneamente.
-
-**Evidencia Visual:**
-
-<div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
-    <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-18]</p>
-    <img src="../Evidencias/evidencia_cp2_18.png" alt="Evidencia CP2-18" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
-</div>
-
----
