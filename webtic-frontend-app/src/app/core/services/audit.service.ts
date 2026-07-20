@@ -14,6 +14,7 @@ export interface AuditLogDto {
 
 export interface AuditFilters {
   actionType?: string;
+  userId?: string;
   fromDate?: string;
   toDate?: string;
 }
@@ -29,6 +30,7 @@ export class AuditService {
   private buildFilterParams(filters?: AuditFilters): HttpParams {
     let params = new HttpParams();
     if (filters?.actionType) params = params.set('actionType', filters.actionType);
+    if (filters?.userId) params = params.set('userId', filters.userId);
     if (filters?.fromDate) params = params.set('fromDate', filters.fromDate);
     if (filters?.toDate) params = params.set('toDate', filters.toDate);
     return params;

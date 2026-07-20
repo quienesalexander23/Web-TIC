@@ -14,6 +14,13 @@
       </select>
     </div>
     <div class="filter-field">
+      <label for="filterUserId">Usuario Responsable</label>
+      <select id="filterUserId" [(ngModel)]="selectedUserId" (change)="applyFilters()">
+        <option value="">Todos</option>
+        <option *ngFor="let u of users" [value]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.email }})</option>
+      </select>
+    </div>
+    <div class="filter-field">
       <label for="filterFromDate">Desde</label>
       <input id="filterFromDate" type="date" [(ngModel)]="fromDate" (change)="applyFilters()">
     </div>

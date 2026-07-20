@@ -51,15 +51,15 @@ namespace WebTIC.API.Controllers
             [FromQuery] DateTime? toDate = null)
         {
             var query = ApplyFilters(actionType, userId, fromDate, toDate);
-            var totalRecords = await query.CountAsync();
+            var totalItems = await query.CountAsync();
             var logs = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            var result = new
+            var result = new Models.DTOs.PaginatedResult<Models.LogAuditoria>
             {
-                TotalRecords = totalRecords,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Items = logs
+                Items = logs,
+                TotalItems = totalItems,
+                Page = pageNumber,
+                PageSize = pageSize
             };
 
             return Ok(result);

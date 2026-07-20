@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuditService, AuditLogDto, AuditFilters } from '../../../../core/services/audit.service';
+import { UserService, UsuarioDto } from '../../../../core/services/user.service';
 import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
 
 @Component({
@@ -20,15 +21,18 @@ export class AuditLogComponent implements OnInit {
   errorMessage = '';
 
   actionTypes: string[] = [];
+  users: UsuarioDto[] = [];
   selectedActionType = '';
+  selectedUserId = '';
   fromDate = '';
   toDate = '';
   isExporting = false;
 
-  constructor(private auditService: AuditService) {}
+  constructor(private auditService: AuditService, private userService: UserService) {}
 
   ngOnInit(): void {
     this.loadActionTypes();
+    this.loadUsers();
     this.loadLogs();
   }
 
@@ -39,9 +43,17 @@ export class AuditLogComponent implements OnInit {
     });
   }
 
+  loadUsers() {
+    this.userService.getUsers(1, 1000).subscribe({
+      next: (res) => (this.users = res.items),
+      error: () => {}
+    });
+  }
+
   private get activeFilters(): AuditFilters {
     return {
       actionType: this.selectedActionType || undefined,
+      userId: this.selectedUserId || undefined,
       fromDate: this.fromDate || undefined,
       toDate: this.toDate || undefined
     };
@@ -69,6 +81,7 @@ export class AuditLogComponent implements OnInit {
 
   clearFilters() {
     this.selectedActionType = '';
+    this.selectedUserId = '';
     this.fromDate = '';
     this.toDate = '';
     this.applyFilters();

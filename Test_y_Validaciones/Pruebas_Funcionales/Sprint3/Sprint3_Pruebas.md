@@ -240,7 +240,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-03]</p>
-    <img src="../Evidencias/evidencia_cp3_03.png" alt="Evidencia CP3-03" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-03" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -260,7 +260,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-04]</p>
-    <img src="../Evidencias/evidencia_cp3_03.png" alt="Evidencia CP3-04" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-04" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -280,7 +280,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-05]</p>
-    <img src="../Evidencias/evidencia_cp3_05.png" alt="Evidencia CP3-05" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-05" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -300,7 +300,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-06]</p>
-    <img src="../Evidencias/evidencia_cp3_06.png" alt="Evidencia CP3-06" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-06" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -320,7 +320,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-07]</p>
-    <img src="../Evidencias/evidencia_cp3_07.png" alt="Evidencia CP3-07" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-07" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -340,7 +340,7 @@ Al superar 5 intentos fallidos de login, ASP.NET Core Identity bloquea la cuenta
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-08]</p>
-    <img src="../Evidencias/evidencia_cp3_08.png" alt="Evidencia CP3-08" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-08" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -360,7 +360,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-09]</p>
-    <img src="../Evidencias/evidencia_cp3_09.png" alt="Evidencia CP3-09" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-09" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -380,7 +380,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-10]</p>
-    <img src="../Evidencias/evidencia_cp3_10.png" alt="Evidencia CP3-10" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-10" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -390,7 +390,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 **Historia de Usuario Relacionada:** HU-06/07
 
 **Explicación Técnica del Caso:**
-`GetAuditLogs` aplica `Skip((pageNumber - 1) * pageSize).Take(pageSize)` sobre la consulta ya filtrada y ordenada, devolviendo `TotalRecords`, `PageNumber`, `PageSize` e `Items` en la misma respuesta.
+`GetAuditLogs` aplica `Skip((pageNumber - 1) * pageSize).Take(pageSize)` sobre la consulta ya filtrada y ordenada, devolviendo la misma forma `PaginatedResult<T>` (`items`, `totalItems`, `page`, `pageSize`) que ya usa el listado de usuarios, para que el frontend consuma ambos endpoints con el mismo contrato.
 
 **Análisis de Seguridad y Desarrollo:**
 
@@ -400,7 +400,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-11]</p>
-    <img src="../Evidencias/evidencia_cp3_11.png" alt="Evidencia CP3-11" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_13.png" alt="Evidencia CP3-11" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
@@ -450,7 +450,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 **Historia de Usuario Relacionada:** HU-06/07
 
 **Explicación Técnica del Caso:**
-`ApplyFilters()` agrega `Where(l => l.UserId == userId)` cuando se informa ese parámetro, devolviendo únicamente los eventos generados por esa cuenta específica.
+`ApplyFilters()` agrega `Where(l => l.UserId == userId)` cuando se informa ese parámetro, devolviendo únicamente los eventos generados por esa cuenta específica. El frontend expone este filtro como un selector "Usuario Responsable" poblado desde `GET /api/usuarios`.
 
 **Análisis de Seguridad y Desarrollo:**
 
@@ -540,7 +540,7 @@ Cada fila de `LogAuditoria` expone `Timestamp`, `ActionType`, `UserId`, `IpAddre
 
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP3-18]</p>
-    <img src="../Evidencias/evidencia_cp3_18.png" alt="Evidencia CP3-18" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
+    <img src="../Evidencias/evidencia_cp3_19.png" alt="Evidencia CP3-18" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
