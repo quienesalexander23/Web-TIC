@@ -24,6 +24,12 @@ namespace WebTIC.API.Models.DTOs
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+
+        // El correo institucional es inmutable una vez creada la cuenta. Se acepta
+        // este campo únicamente para poder detectar y rechazar explícitamente un
+        // intento de modificarlo (ver UsuariosController.UpdateUsuario), en vez de
+        // ignorarlo silenciosamente.
+        public string? Email { get; set; }
     }
 
     public class PaginatedResult<T>

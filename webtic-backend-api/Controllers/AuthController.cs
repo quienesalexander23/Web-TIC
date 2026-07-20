@@ -52,13 +52,23 @@ namespace WebTIC.API.Controllers
             // Mitigación de enumeración de usuarios (Mensaje genérico)
             if (user == null)
             {
-                return Unauthorized(new { Message = "Credenciales incorrectas" });
+                return Unauthorized(new 
+                { 
+                    ErrorType = "InvalidCredentials", 
+                    Message = "Acceso Denegado", 
+                    Description = "Credenciales incorrectas." 
+                });
             }
 
             // Validar si el usuario fue dado de baja lógicamente (Flujo 2)
             if (!user.IsActive)
             {
-                return Unauthorized(new { Message = "Su cuenta se encuentra inactiva. Contacte al administrador." });
+                return Unauthorized(new 
+                { 
+                    ErrorType = "InactiveAccount", 
+                    Message = "Cuenta Inactiva", 
+                    Description = "Su cuenta se encuentra inactiva. Contacte al administrador." 
+                });
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
@@ -89,6 +99,9 @@ namespace WebTIC.API.Controllers
 
             // Generar código 2FA
             var twoFactorCode = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+            
+            // MODO DESARROLLO: Imprimir código en consola por si falla el correo
+            Console.WriteLine($"[DEV MODE] Código 2FA para {user.Email}: {twoFactorCode}");
 
             // Preparar el cuerpo del correo
             var emailBody = $@"
@@ -205,6 +218,9 @@ namespace WebTIC.API.Controllers
             // Construimos la URL del Frontend para recuperar contraseña
             var encodedToken = Uri.EscapeDataString(token);
             var resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
+
+            // MODO DESARROLLO: Imprimir link en consola por si falla el correo
+            Console.WriteLine($"[DEV MODE] Enlace de recuperación para {user.Email}: {resetLink}");
 
             // Usamos el IEmailService para enviar el correo con diseño profesional
             var emailBody = $@"

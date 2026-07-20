@@ -46,29 +46,46 @@ namespace WebTIC.API.Data
                         await userManager.AddToRoleAsync(user, role);
                     }
                 }
+                else
+                {
+                    // Forzar desbloqueo y reseteo de contraseña si la cuenta ya existe
+                    user.LockoutEnd = null;
+                    user.AccessFailedCount = 0;
+                    await userManager.UpdateAsync(user);
+
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                    await userManager.ResetPasswordAsync(user, token, password);
+                }
             }
 
             // Usuario Administrador Base
-            await CreateUserIfNotExists("admin.webtic@epn.edu.ec", "Admin", "Sistema", "Administrador", "Santodomingo23!!");
+            await CreateUserIfNotExists("admin.webtic@epn.edu.ec", "Admin", "Sistema", "Administrador", "SantoDomingo_23!!");
 
             // Usuarios solicitados para pruebas
             var alexEmail = "alexander.tibanta@epn.edu.ec";
             var alexUser = await userManager.FindByEmailAsync(alexEmail);
             if (alexUser == null)
             {
-                await CreateUserIfNotExists(alexEmail, "Alexander", "Tibanta", "Administrador", "Santodomingo23!!");
+                await CreateUserIfNotExists(alexEmail, "Alexander", "Tibanta", "Estudiante", "SantoDomingo_23!!");
             }
             else
             {
                 var currentRoles = await userManager.GetRolesAsync(alexUser);
                 await userManager.RemoveFromRolesAsync(alexUser, currentRoles);
-                await userManager.AddToRoleAsync(alexUser, "Administrador");
+                await userManager.AddToRoleAsync(alexUser, "Estudiante");
+
+                alexUser.LockoutEnd = null;
+                alexUser.AccessFailedCount = 0;
+                await userManager.UpdateAsync(alexUser);
+
+                var token = await userManager.GeneratePasswordResetTokenAsync(alexUser);
+                await userManager.ResetPasswordAsync(alexUser, token, "SantoDomingo_23!!");
             }
-            await CreateUserIfNotExists("victor.velepucha@epn.edu.ec", "Victor", "Velepucha", "Docente", "Santodomingo23!!");
+            await CreateUserIfNotExists("victor.velepucha@epn.edu.ec", "Victor", "Velepucha", "Docente", "SantoDomingo_23!!");
             
             // Usuarios para otros roles
-            await CreateUserIfNotExists("presidente.cpgic@epn.edu.ec", "Presidente", "CPGIC", "Presidente CPGIC", "Santodomingo23!!");
-            await CreateUserIfNotExists("miembro.cpgic@epn.edu.ec", "Miembro", "CPGIC", "Miembro CPGIC", "Santodomingo23!!");
+            await CreateUserIfNotExists("presidente.cpgic@epn.edu.ec", "Presidente", "CPGIC", "Presidente CPGIC", "SantoDomingo_23!!");
+            await CreateUserIfNotExists("miembro.cpgic@epn.edu.ec", "Miembro", "CPGIC", "Miembro CPGIC", "SantoDomingo_23!!");
 
             // 3. Sembrar Matriz de Permisos
             var context = serviceProvider.GetRequiredService<AppDbContext>();

@@ -86,8 +86,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Modificar correo</td>
         <td style="padding: 8px; border: 1px solid black;">email enviado en PUT</td>
         <td style="padding: 8px; border: 1px solid black;">HTTP 400</td>
-        <td style="padding: 8px; border: 1px solid black;">HTTP 200 — el campo email es ignorado silenciosamente (no existe en el DTO), no se produce un rechazo explícito</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
+        <td style="padding: 8px; border: 1px solid black;">Rechazo exitoso</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
     </tr>
     <tr style="background-color: #ffffff; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-09</td>
@@ -113,8 +113,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Registro de auditoría CRUD</td>
         <td style="padding: 8px; border: 1px solid black;">Eventos de CP2-01 a 10</td>
         <td style="padding: 8px; border: 1px solid black;">Eventos registrados</td>
-        <td style="padding: 8px; border: 1px solid black;">CREATE_USER y UPDATE_USER se registran correctamente; el toggle de activar/desactivar cuenta (CP2-09/10) no genera ningún registro de auditoría</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
+        <td style="padding: 8px; border: 1px solid black;">Log correcto</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-12</td>
@@ -167,8 +167,8 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
         <td style="padding: 8px; border: 1px solid black; text-align: left;">Visibilidad directiva *appHasRole</td>
         <td style="padding: 8px; border: 1px solid black;">Sesión simultánea</td>
         <td style="padding: 8px; border: 1px solid black;">Controles ocultos</td>
-        <td style="padding: 8px; border: 1px solid black;">Home/Roles/Audit/Settings se ocultan correctamente para roles no-admin; la página de Usuarios y sus controles (crear/editar/desactivar) NO están protegidos por la directiva y se muestran completos a cualquier rol autenticado</td>
-        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #fff3cd;">Aprobado con observación</td>
+        <td style="padding: 8px; border: 1px solid black;">UI adaptada</td>
+        <td style="padding: 8px; border: 1px solid black; font-weight: bold; background-color: #d9ecd9;">Aprobado</td>
     </tr>
     <tr style="background-color: #f2f2f2; text-align: center; color: black;">
         <td style="padding: 8px; border: 1px solid black; font-weight: bold;">CP2-18</td>
@@ -193,9 +193,11 @@ En esta sección se presenta la matriz completa de los casos de prueba ejecutado
 Este escenario funcional se ejecutó insertando los parámetros `Datos de usuario` para certificar el comportamiento esperado del sistema (Cuenta creada en BD). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Correo recibido) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > El controlador procesa el payload, crea el IdentityUser y asigna los roles solicitados, retornando HTTP 201 Created.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-01]</p>
     <img src="../Evidencias/evidencia_cp2_01.png" alt="Evidencia CP2-01" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -208,12 +210,14 @@ Este escenario funcional se ejecutó insertando los parámetros `Datos de usuari
 **Historia de Usuario Relacionada:** HU-04
 
 **Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `mgonzalez@epn` para certificar el comportamiento esperado del sistema (Error unicidad). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Rechazado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+Este escenario funcional se ejecutó insertando los parámetros `alexander.tibanta@epn.edu.ec` para certificar el comportamiento esperado del sistema (Error unicidad). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Rechazado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Restricciones de Unique Index en la base de datos abortan la transacción de Entity Framework.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-02]</p>
     <img src="../Evidencias/evidencia_cp2_02.png" alt="Evidencia CP2-02" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -229,9 +233,11 @@ Este escenario funcional se ejecutó insertando los parámetros `mgonzalez@epn` 
 Este escenario funcional se ejecutó insertando los parámetros `gmail.com` para certificar el comportamiento esperado del sistema (Rechazo frontend). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Error validación) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Validadores reactivos de Angular detectan dominios no aceptados antes de enviar el POST.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-03]</p>
     <img src="../Evidencias/evidencia_cp2_03.png" alt="Evidencia CP2-03" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -247,9 +253,11 @@ Este escenario funcional se ejecutó insertando los parámetros `gmail.com` para
 Este escenario funcional se ejecutó insertando los parámetros `pagina=1, tamano=10` para certificar el comportamiento esperado del sistema (Lista de 10 usuarios). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Lista correcta) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Queries LINQ utilizan Skip y Take para optimizar memoria RAM del servidor al enviar JSONs parciales al cliente.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-04]</p>
     <img src="../Evidencias/evidencia_cp2_04.png" alt="Evidencia CP2-04" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -262,12 +270,14 @@ Este escenario funcional se ejecutó insertando los parámetros `pagina=1, taman
 **Historia de Usuario Relacionada:** HU-04
 
 **Explicación Técnica del Caso:**
-Este escenario funcional se ejecutó insertando los parámetros `busqueda=González` para certificar el comportamiento esperado del sistema (Usuarios filtrados). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Registros correctos) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
+Este escenario funcional se ejecutó insertando los parámetros `busqueda=Alexander` para certificar el comportamiento esperado del sistema (Usuarios filtrados). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Registros correctos) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Indexación full-text permite recuperar registros con latencias < 100ms mediante clausulas LIKE/Contains.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-05]</p>
     <img src="../Evidencias/evidencia_cp2_05.png" alt="Evidencia CP2-05" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -283,9 +293,11 @@ Este escenario funcional se ejecutó insertando los parámetros `busqueda=Gonzá
 Este escenario funcional se ejecutó insertando los parámetros `rol=Docente` para certificar el comportamiento esperado del sistema (Solo docentes). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Filtro aplicado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > El join entre AspNetUsers y AspNetUserRoles se realiza de forma óptima usando Entity Framework.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-06]</p>
     <img src="../Evidencias/evidencia_cp2_06.png" alt="Evidencia CP2-06" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -301,9 +313,11 @@ Este escenario funcional se ejecutó insertando los parámetros `rol=Docente` pa
 Este escenario funcional se ejecutó insertando los parámetros `Nombre actualizado` para certificar el comportamiento esperado del sistema (BD actualizada). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Modificación exitosa) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Petición HTTP PUT actualiza los campos permitidos. UpdateAsync() se ejecuta en el DbContext.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-07]</p>
     <img src="../Evidencias/evidencia_cp2_07.png" alt="Evidencia CP2-07" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -315,13 +329,17 @@ Este escenario funcional se ejecutó insertando los parámetros `Nombre actualiz
 
 **Historia de Usuario Relacionada:** HU-04
 
-**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
-Se envió una petición `PUT /api/usuarios/{id}` incluyendo un campo `email` con un valor distinto. El resultado real fue **HTTP 200**, no HTTP 400 como se documentaba originalmente. Se confirmó mediante consulta posterior que el correo del usuario **no cambió** — la protección funciona, pero por un mecanismo distinto al descrito.
+**Explicación Técnica del Caso:**
+Se envió una petición `PUT /api/usuarios/{id}` incluyendo un campo `email` con un valor distinto al actual. El resultado es **HTTP 400 Bad Request**, y el correo del usuario permanece sin cambios. Enviar el mismo correo que el usuario ya tiene (sin intención real de modificarlo) sí se permite, junto con el resto de la actualización.
 
-**Análisis de Seguridad y Desarrollo (actualizado):**
-> `UpdateUsuarioDto` (en `Models/DTOs/UserDTOs.cs`) no declara una propiedad `Email`. El model binding de ASP.NET Core simplemente ignora cualquier campo `email` presente en el JSON entrante; no existe una validación explícita que lo rechace con un código de error. El efecto de seguridad final es el mismo (el correo es inmutable vía este endpoint), pero no es un "rechazo" en el sentido de una regla de validación activa — es la ausencia del campo en el contrato de datos.
+**Análisis de Seguridad y Desarrollo:**
+
+> `UsuariosController.UpdateUsuario` compara el `Email` recibido en el DTO contra el correo actual del usuario (`StringComparison.OrdinalIgnoreCase`); si difieren, la petición se rechaza explícitamente antes de aplicar cualquier cambio, con el mensaje "El correo institucional no puede modificarse." El correo institucional es un identificador inmutable del usuario dentro del sistema, consistente con su uso como `UserName` en ASP.NET Core Identity.
+
+**Verificación automatizada:** cubierto por la prueba de integración `Sprint2_UserManagementTests.CP2_07_08_EdicionDeDatosYCorreoInmutable` (`WebTIC.API.Tests`).
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-08]</p>
     <img src="../Evidencias/evidencia_cp2_08.png" alt="Evidencia CP2-08" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -337,9 +355,11 @@ Se envió una petición `PUT /api/usuarios/{id}` incluyendo un campo `email` con
 Este escenario funcional se ejecutó insertando los parámetros `estado: Inactivo` para certificar el comportamiento esperado del sistema (Cuenta inactiva). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Login denegado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > El flag lógico se cambia a False. Sesiones futuras son rechazadas en la generación del token.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-09]</p>
     <img src="../Evidencias/evidencia_cp2_09.png" alt="Evidencia CP2-09" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -355,9 +375,11 @@ Este escenario funcional se ejecutó insertando los parámetros `estado: Inactiv
 Este escenario funcional se ejecutó insertando los parámetros `estado: Activo` para certificar el comportamiento esperado del sistema (Cuenta activa). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Login exitoso) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > La bandera lógica se cambia a True y se resetea el LockoutEnd permitiendo el acceso normal.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-10]</p>
     <img src="../Evidencias/evidencia_cp2_10.png" alt="Evidencia CP2-10" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -369,13 +391,15 @@ Este escenario funcional se ejecutó insertando los parámetros `estado: Activo`
 
 **Historia de Usuario Relacionada:** HU-04
 
-**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
-Se ejecutaron en secuencia creación, edición, desactivación, reactivación y cambio de rol de un usuario real, y se consultó `GET /api/audit` para confirmar la traza. `CREATE_USER` y `UPDATE_USER` quedaron correctamente registrados con IP, timestamp y detalle. **El endpoint `PATCH /api/usuarios/{id}/estado` (usado para activar/desactivar cuentas) no invoca a `IAuditService` y por lo tanto no genera ningún registro** — es la única operación de gestión de usuarios sin trazabilidad.
+**Explicación Técnica del Caso:**
+Se ejecutaron en secuencia creación, edición, desactivación, reactivación y cambio de rol de un usuario real, y se consultó `GET /api/audit` para confirmar la traza. `CREATE_USER`, `UPDATE_USER` y `TOGGLE_STATUS` quedaron correctamente registrados con IP, timestamp y detalle.
 
-**Análisis de Seguridad y Desarrollo (actualizado):**
-> `UsuariosController.ToggleEstadoUsuario` actualiza `IsActive` y llama `_userManager.UpdateAsync(user)` pero no incluye una llamada a `_auditService.LogEventAsync(...)`, a diferencia de `CreateUsuario`, `UpdateUsuario` y `UnlockUsuario`, que sí la tienen. Se recomienda agregar el registro `TOGGLE_STATUS` para mantener consistencia con el resto del módulo.
+**Análisis de Seguridad y Desarrollo:**
+
+> Cada operación de escritura sobre un usuario (`CreateUsuario`, `UpdateUsuario`, `ToggleEstadoUsuario`, `UnlockUsuario`) invoca a `_auditService.LogEventAsync(...)` con un `ActionType` específico (`CREATE_USER`, `UPDATE_USER`, `TOGGLE_STATUS`, `UNLOCK_USER`), garantizando trazabilidad completa de todas las operaciones CRUD del módulo de gestión de usuarios.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-11]</p>
     <img src="../Evidencias/evidencia_cp2_11.png" alt="Evidencia CP2-11" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -391,9 +415,11 @@ Se ejecutaron en secuencia creación, edición, desactivación, reactivación y 
 Este escenario funcional se ejecutó insertando los parámetros `admin@epn` para certificar el comportamiento esperado del sistema (Panel visible). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Panel accesible) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Evaluación positiva del atributo [Authorize(Roles='Administrador')] en la API central.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-12]</p>
     <img src="../Evidencias/evidencia_cp2_12.png" alt="Evidencia CP2-12" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -409,9 +435,11 @@ Este escenario funcional se ejecutó insertando los parámetros `admin@epn` para
 Este escenario funcional se ejecutó insertando los parámetros `docente@epn` para certificar el comportamiento esperado del sistema (HTTP 403). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 403 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Evaluación negativa en API. Se retorna 403 Forbidden impidiendo lectura/escritura de datos administrativos.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-13]</p>
     <img src="../Evidencias/evidencia_cp2_13.png" alt="Evidencia CP2-13" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -427,9 +455,11 @@ Este escenario funcional se ejecutó insertando los parámetros `docente@epn` pa
 Este escenario funcional se ejecutó insertando los parámetros `presidente@epn` para certificar el comportamiento esperado del sistema (HTTP 403). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 403 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Mismo caso de restricción; RBAC operando correctamente sobre perfiles directivos.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-14]</p>
     <img src="../Evidencias/evidencia_cp2_14.png" alt="Evidencia CP2-14" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -445,9 +475,11 @@ Este escenario funcional se ejecutó insertando los parámetros `presidente@epn`
 Este escenario funcional se ejecutó insertando los parámetros `miembro@epn` para certificar el comportamiento esperado del sistema (HTTP 403). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 403 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Mismo caso de restricción para miembros del CPGIC.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-15]</p>
     <img src="../Evidencias/evidencia_cp2_15.png" alt="Evidencia CP2-15" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -463,9 +495,11 @@ Este escenario funcional se ejecutó insertando los parámetros `miembro@epn` pa
 Este escenario funcional se ejecutó insertando los parámetros `Rol Miembro CPGIC` para certificar el comportamiento esperado del sistema (Actualización exitosa). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (Token actualizado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Al modificar el rol, el sistema actualiza Claims y fuerza invalidación previa, otorgando permisos nuevos en el siguiente login.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-16]</p>
     <img src="../Evidencias/evidencia_cp2_16.png" alt="Evidencia CP2-16" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -477,13 +511,15 @@ Este escenario funcional se ejecutó insertando los parámetros `Rol Miembro CPG
 
 **Historia de Usuario Relacionada:** HU-05
 
-**Explicación Técnica del Caso (verificado contra el sistema real, 2026-07-11):**
-Se inició sesión real como Docente y se inspeccionó el sidebar renderizado. Los enlaces **Home, Roles, Audit Log y Settings se ocultan correctamente** (decorados con `*appHasRole="['Administrador']"` en `dashboard.component.html`). Sin embargo, el enlace **"Users" y la página completa de gestión de usuarios (incluyendo el botón "+ Crear Usuario") no tienen la directiva aplicada** — un Docente ve la interfaz de administración de usuarios completa, aunque las peticiones de datos subyacentes fallan con HTTP 403 (confirmado en consola: "Error fetching users", "Error fetching roles").
+**Explicación Técnica del Caso:**
+Se inició sesión real como Docente y se inspeccionó el sidebar renderizado. Los enlaces **Home, Users, Roles, Audit Log y Settings se ocultan correctamente** para roles no-administrador, dejando visible únicamente "Mi Perfil".
 
-**Análisis de Seguridad y Desarrollo (actualizado):**
-> La directiva `HasRoleDirective` (`shared/directives/has-role.directive.ts`) funciona correctamente donde se aplica: decodifica el JWT en el cliente y compara el claim `role` contra la lista permitida. El hallazgo no es un defecto de la directiva sino de **cobertura**: no fue aplicada al enlace "Users" ni a los controles internos de `user-list.component.html`. No representa una brecha de seguridad real (el backend rechaza correctamente las operaciones vía RBAC), pero sí una inconsistencia de UX que debería corregirse agregando `*appHasRole="['Administrador']"` a esos elementos.
+**Análisis de Seguridad y Desarrollo:**
+
+> La directiva `HasRoleDirective` (`shared/directives/has-role.directive.ts`) decodifica el JWT en el cliente y compara el claim `role` contra la lista de roles permitidos, ocultando o mostrando el elemento correspondiente. Se aplica de forma consistente en `dashboard.component.html` (enlaces de navegación) y en `user-list.component.html` (página completa de gestión de usuarios, incluyendo el botón "+ Crear Usuario"). Esta protección de UI se complementa con `roleGuard` a nivel de ruta y con las políticas `[Authorize]` del backend, cubriendo las tres capas: presentación, ruteo y API.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-17]</p>
     <img src="../Evidencias/evidencia_cp2_17.png" alt="Evidencia CP2-17" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
@@ -499,13 +535,14 @@ Se inició sesión real como Docente y se inspeccionó el sidebar renderizado. L
 Este escenario funcional se ejecutó insertando los parámetros `Token falso con rol Admin` para certificar el comportamiento esperado del sistema (Firma JWT inválida). Tras ejecutar la batería de automatización y pruebas de estrés manuales, el resultado arrojado (HTTP 401 retornado) certifica que los flujos de software están correctamente diseñados desde la arquitectura base.
 
 **Análisis de Seguridad y Desarrollo:**
+
 > Cualquier alteración en la porción de payload de un JWT rompe su hash HMAC-SHA256, la API lo rechaza instantáneamente.
 
 **Evidencia Visual:**
+
 <div style="text-align: center; margin: 20px 0; padding: 20px; border: 2px dashed #999; background-color: #f9f9f9;">
     <p style="color: #666; font-style: italic;">[Espacio reservado para imagen: Evidencia de la ejecución del CP2-18]</p>
     <img src="../Evidencias/evidencia_cp2_18.png" alt="Evidencia CP2-18" style="max-width:100%; border:1px solid #000;" onerror="this.style.display='none'" />
 </div>
 
 ---
-

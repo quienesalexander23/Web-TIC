@@ -1,0 +1,130 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 1rem;
+  animation: overlayFadeIn 0.15s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Outfit', sans-serif;
+  animation: modalPopIn 0.2s ease;
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-icon-container {
+  width: 56px;
+  height: 56px;
+  background-color: #dbeafe; /* azul claro por defecto */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.modal-icon-container.variant-danger {
+  background-color: #fee2e2;
+}
+
+.modal-icon {
+  width: 28px;
+  height: 28px;
+  color: #0f3b7f;
+}
+
+.variant-danger .modal-icon {
+  color: #dc2626;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.modal-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 10px 0;
+  background-color: #ffffff;
+  color: #0f3b7f;
+  border: 1px solid #0f3b7f;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #f8fafc;
+}
+
+.btn-confirm {
+  flex: 1;
+  padding: 10px 0;
+  background-color: #0f3b7f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-confirm:hover {
+  background-color: #0c2d61;
+}
+
+.btn-confirm-danger {
+  background-color: #b91c1c;
+}
+
+.btn-confirm-danger:hover {
+  background-color: #991b1b;
+}

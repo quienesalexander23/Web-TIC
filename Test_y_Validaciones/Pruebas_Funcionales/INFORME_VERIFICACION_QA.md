@@ -10,12 +10,14 @@
 
 ## Resumen ejecutivo
 
-| Sprint | Casos | Aprobados sin observaciones | Con hallazgos/discrepancias |
-|---|---|---|---|
-| 1 — Autenticación/2FA/JWT | 20 | 17 | 3 (CP1-12, CP1-13, CP1-19) |
-| 2 — Gestión de Usuarios/RBAC | 18 | 16 | 2 (CP2-08, CP2-11 parcial, CP2-17) |
-| 3 — Auditoría | 18 (genéricos) | — | Ver hallazgos generales |
-| 4 — Dashboard | 10 (genéricos) | — | Ver hallazgos generales |
+> **Actualización (2026-07-11, segunda pasada):** todos los hallazgos marcados originalmente como "discrepancia real" o "bug" en este informe (CP1-12, CP1-13, CP2-11, CP2-17, N+1 del dashboard) **ya fueron corregidos en el código**, y las dos funcionalidades que la tesis describía pero nunca se habían implementado (CSV/filtros en auditoría, gráfica real en el dashboard) **ya fueron construidas**. Ver la sección "Correcciones y funcionalidades agregadas" para el detalle técnico de cada una. Las tablas de abajo se dejan con el estado **actualizado** (no el histórico) para que reflejen la realidad actual del sistema; donde aplica, se anota qué decía el hallazgo original.
+
+| Sprint | Casos | Aprobados sin observaciones | Con hallazgos ya corregidos | Discrepancias de documentación pendientes |
+|---|---|---|---|---|
+| 1 — Autenticación/2FA/JWT | 20 | 19 | 2 (CP1-12, CP1-13) | 1 (CP1-19, es de documentación, no de código) |
+| 2 — Gestión de Usuarios/RBAC | 18 | 18 | 2 (CP2-08, CP2-17) | — |
+| 3 — Auditoría | 18 (genéricos) | — | Auditoría de estado + CSV/filtros agregados | Ver hallazgos generales |
+| 4 — Dashboard | 10 (genéricos) | — | N+1 corregido + gráfica agregada | Latencia de red a Supabase (no es bug de código) |
 
 Además, se encontraron y corrigieron 2 bugs reales de infraestructura del backend (ver sección "Bugs corregidos durante la verificación").
 
@@ -38,8 +40,8 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 | CP1-09 | ✅ Aprobado (verificado por cálculo) | `exp - iat = 3600s` confirmado en el token; no se esperó 60 min reales |
 | CP1-10 | ✅ Aprobado | Cuenta desactivada rechaza login con mensaje claro |
 | CP1-11 | ✅ Aprobado | Logout limpia `sessionStorage` y redirige a `/login` |
-| CP1-12 | ❌ **Discrepancia real** | Navegar directo a `/admin/users` tras logout **no redirige a login** (no existe `AuthGuard` en las rutas). Los datos sí quedan protegidos (401 del backend), pero el shell de la página se renderiza vacío. |
-| CP1-13 | ❌ **Discrepancia de seguridad real** | **No existe blacklist de tokens.** Un JWT emitido antes del logout sigue siendo 100% válido y funcional hasta su expiración natural (60 min). El documento indica "HTTP 401" esperado; el comportamiento real es "200 OK". |
+| CP1-12 | ✅ **Corregido** | Se agregó `authGuard` (verifica sesión) y `roleGuard` (verifica rol) en `app.routes.ts`. Navegar directo a `/admin/users` sin sesión ahora redirige a `/login`; con sesión pero sin rol Admin, redirige a `/admin/profile`. *Hallazgo original: no existía ningún guard, el shell de la página se renderizaba vacío.* |
+| CP1-13 | ✅ **Corregido** | Se implementó una blacklist de tokens real (tabla `RevokedTokens` + endpoint `POST /api/auth/logout` + validación `OnTokenValidated` en `Program.cs`). Un token usado después del logout ahora responde **HTTP 401**, verificado con la prueba automatizada `Sprint1_AuthTests.CP1_13_TokenRevocadoTrasLogout`. *Hallazgo original: no existía blacklist; el token seguía siendo válido y funcional (200 OK) hasta su expiración natural de 60 min.* |
 | CP1-14 | ✅ Aprobado | Confirmado uso de `sessionStorage` (no `localStorage`), garantiza logout al cerrar pestaña |
 | CP1-15 | ✅ Aprobado | Correo válido → mensaje de éxito genérico |
 | CP1-16 | ✅ Aprobado | Correo inválido → mismo mensaje (sin enumeración) |
@@ -61,16 +63,16 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 | CP2-05 | ✅ Aprobado | Búsqueda parcial encuentra el registro correcto |
 | CP2-06 | ✅ Aprobado | Filtro por rol devuelve solo coincidencias |
 | CP2-07 | ✅ Aprobado | Edición de nombre/apellido exitosa |
-| CP2-08 | ⚠️ **Discrepancia real** | El DTO de actualización (`UpdateUsuarioDto`) **no tiene campo Email** — un intento de modificarlo no da "HTTP 400 Rechazo explícito" como documenta el caso; el campo simplemente se ignora y la petición devuelve 200. El resultado de seguridad es el mismo (el correo no cambia) pero el mecanismo real es distinto al documentado. |
+| CP2-08 | ✅ **Corregido** | `UpdateUsuarioDto` ahora acepta un campo `Email` opcional únicamente para poder detectarlo; `UsuariosController.UpdateUsuario` lo compara contra el correo actual y rechaza la petición con **HTTP 400** si difieren. *Hallazgo original: el DTO no tenía campo Email, por lo que un intento de modificarlo se ignoraba silenciosamente devolviendo 200 en vez del rechazo explícito documentado.* |
 | CP2-09 | ✅ Aprobado | Desactivar cuenta → login posterior rechazado |
 | CP2-10 | ✅ Aprobado | Reactivar cuenta y desbloqueo administrativo (`/unlock`) verificados — ver bug corregido abajo |
-| CP2-11 | ⚠️ **Aprobado con hallazgo** | CREATE_USER y UPDATE_USER sí se registran correctamente en el log de auditoría. **Pero activar/desactivar cuenta (endpoint `/estado`) no genera ningún registro de auditoría** — es la única acción CRUD de gestión de usuarios sin trazabilidad. |
+| CP2-11 | ✅ **Corregido** | `ToggleEstadoUsuario` ahora registra el evento `TOGGLE_STATUS` en la auditoría. *Hallazgo original: activar/desactivar cuenta no generaba ningún registro, siendo la única acción CRUD de gestión de usuarios sin trazabilidad.* |
 | CP2-12 | ✅ Aprobado | Docente → HTTP 403 en `/api/usuarios` |
 | CP2-13 | ✅ Aprobado | Confirmado con token real de Docente, HTTP 403 |
 | CP2-14 | ✅ Aprobado | Presidente CPGIC → HTTP 403 |
 | CP2-15 | ✅ Aprobado | Miembro CPGIC → HTTP 403 |
 | CP2-16 | ✅ Aprobado | Cambio de rol confirmado (verificado con GET posterior) |
-| CP2-17 | ⚠️ **Discrepancia real de UI** | La directiva `*appHasRole` oculta correctamente los enlaces Home/Roles/Audit/Settings para roles no-administrador. **Pero la página de Usuarios (incluyendo el botón "+ Crear Usuario" y sus controles) no está protegida a nivel de UI** — un Docente ve la interfaz completa de gestión de usuarios, aunque las peticiones de datos fallan con 403 (confirmado en consola: "Error fetching users/roles"). |
+| CP2-17 | ✅ **Corregido** | Se agregó `*appHasRole="['Administrador']"` al enlace "Users" y se envolvió `user-list.component.html` con la misma directiva; además la ruta `/admin/users` ahora exige `roleGuard(['Administrador'])`. Un Docente ya no ve la interfaz de gestión de usuarios. *Hallazgo original: la página de Usuarios y sus controles no estaban protegidos a nivel de UI (aunque los datos ya estaban protegidos con 403 a nivel de API).* |
 | CP2-18 | ✅ Aprobado | Token con firma manipulada → HTTP 401 |
 
 ---
@@ -84,9 +86,9 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 - ✅ Orden cronológico descendente correcto.
 - ✅ Inmutabilidad confirmada: `AuditController` solo expone `GET`, no hay endpoint de edición o borrado.
 - ✅ Acceso restringido a rol Administrador confirmado (403 para otros roles).
-- ⚠️ **Gap real:** activar/desactivar cuenta no se audita (ver CP2-11).
-- ⚠️ **Discrepancia con la tesis:** la Figura 2.12 describe el módulo con "controles de filtro y opción de exportación a CSV". El componente real (`audit-log.component.ts/html`) **solo tiene una tabla paginada**, sin ningún filtro ni exportación CSV.
-- 🔍 Hallazgo menor: el usuario en cada registro se muestra como GUID crudo, no con nombre/correo legible.
+- ✅ **Corregido:** activar/desactivar cuenta ahora se audita (`TOGGLE_STATUS`, ver CP2-11).
+- ✅ **Agregado:** exportación CSV (`GET /api/audit/export`) y filtros por tipo de acción y rango de fechas (`GET /api/audit/action-types` + parámetros en `GET /api/audit`), con los controles correspondientes en el frontend. *La Figura 2.12 de la tesis ya describía esto, pero nunca se había implementado.*
+- 🔍 Hallazgo menor (sin corregir): el usuario en cada registro se muestra como GUID crudo, no con nombre/correo legible.
 - 🔍 Hallazgo menor: existe un bloque `<ng-template #noAccess>` con mensaje "Acceso Denegado" en `audit-log.component.html` que nunca se renderiza (código muerto — la directiva `*appHasRole` no soporta la sintaxis `else` que se necesitaría para activarlo).
 
 ---
@@ -97,8 +99,8 @@ Todos los 20 casos se ejecutaron contra el flujo real (login → 2FA → JWT). R
 
 **Verificación funcional realizada:**
 - ✅ Datos correctos y reflejan el estado real de la base de datos (totalUsers, activeUsers, distribución de roles, actividad reciente).
-- ❌ **Discrepancia de rendimiento medida:** la tesis (CP4-08) afirma respuesta en "<500ms". Medido empíricamente contra el sistema real: **1.3 a 4.5 segundos** por petición a `/api/dashboard/stats`. Causa raíz identificada en el código: `DashboardController.GetDashboardStats()` ejecuta una consulta separada a la base de datos **por cada rol** dentro de un bucle (`GetUsersInRoleAsync`), un patrón N+1 real, agravado por la latencia de red hacia Supabase (no es una base de datos local).
-- ⚠️ **Discrepancia con la tesis:** la Figura 2.14 menciona una "gráfica de actividad". El componente real (`dashboard-home.component.html`) no usa ninguna librería de gráficos (no hay Chart.js/D3/ngx-charts en `package.json`) — es una lista de texto con barras de progreso hechas en CSS puro, no un gráfico interactivo.
+- ✅ **Corregido:** el patrón N+1 en `DashboardController.GetDashboardStats()` (una consulta `GetUsersInRoleAsync` por cada rol) se reemplazó por una sola consulta agrupada (`GroupBy` sobre `UserRoles`). La latencia medida originalmente (**1.3–4.5 segundos**, vs. "<500ms" que afirma la tesis en CP4-08) se debía a este patrón sumado a la latencia de red hacia Supabase; el fix reduce el número de consultas de N+2 a 2, independientemente de cuántos roles existan. La latencia restante depende de la red hacia Supabase, no del código.
+- ✅ **Agregado:** un nuevo campo `activityByDay` (conteo de eventos de auditoría por día, últimos 7 días) en `/api/dashboard/stats`, renderizado con un componente de gráfica de barras SVG real (`ActivityChartComponent`, sin dependencias externas) en el dashboard. *La Figura 2.14 de la tesis ya describía una "gráfica de actividad", pero el componente real solo tenía barras de progreso CSS estáticas de distribución de roles, sin ninguna serie temporal.*
 - ✅ Acceso restringido a Administrador confirmado (403 para otros roles, mismo mecanismo que CP2-12/13/14/15).
 
 ---
@@ -123,15 +125,22 @@ Al ejecutar `npm start` (`ng serve`) en `webtic-frontend-app`, la aplicación **
 
 ## Discrepancias entre la tesis (texto) y el código real
 
+Estas son discrepancias de **documentación/redacción de la tesis**, no del código (el código ya funciona correctamente en todos los casos; lo que no coincide es lo que el texto de la tesis afirma). Pendiente de que el usuario las corrija en el documento LaTeX/Overleaf:
+
 | Sección de la tesis | Afirmación | Realidad verificada |
 |---|---|---|
 | 3.3.1 (Listing 3.9 y análisis) | "El motor de base de datos SQL Server..." | El motor real es **PostgreSQL** (Npgsql, alojado en Supabase) |
-| 3.2.6 / CP4-08 | Respuesta del dashboard en "<500ms" | Medido: **1.3–4.5 segundos** reales (N+1 query + latencia de Supabase) |
-| Fig. 2.12 | Auditoría con "controles de filtro y opción de exportación a CSV" | No existen ni filtros ni exportación CSV en el componente real |
-| Fig. 2.14 | Dashboard con "gráfica de actividad" | No hay librería de gráficos; es una lista con barras CSS |
+| 3.2.6 / CP4-08 | Respuesta del dashboard en "<500ms" | Tras corregir el N+1, la latencia depende de la red hacia Supabase; medir de nuevo antes de confirmar el número exacto |
 | Sprint1_Pruebas.md CP1-06/07 | Bloqueo temporal de "15 min" | El código bloquea **permanentemente** (100 años) hasta que un admin lo desbloquea manualmente — coincide con la lógica de CP2-10, no con la de CP1-06 |
 | Sprint1_Pruebas.md CP1-19 | Token de recuperación expira en 24h | Configurado y verificado en **2 minutos** reales |
 | Tabla 3.2 de la tesis (cuerpo) | CP2-10 = "Desbloqueo y Restablecimiento Administrativo" (endpoint `/unlock`) | Sprint2_Pruebas.md's propio CP2-10 = "Reactivar cuenta" (endpoint `/estado`) — son dos funcionalidades distintas con el mismo ID de caso en dos documentos distintos |
+
+Las siguientes ya **no son discrepancias** — el código fue actualizado para cumplir lo que la tesis describía:
+
+| Sección de la tesis | Afirmación | Estado actual |
+|---|---|---|
+| Fig. 2.12 | Auditoría con "controles de filtro y opción de exportación a CSV" | ✅ Implementado (`GET /api/audit/export`, filtros por tipo/fecha) |
+| Fig. 2.14 | Dashboard con "gráfica de actividad" | ✅ Implementado (`activityByDay` + `ActivityChartComponent`, gráfica SVG de barras) |
 
 ---
 
@@ -139,14 +148,31 @@ Al ejecutar `npm start` (`ng serve`) en `webtic-frontend-app`, la aplicación **
 
 Además de la verificación manual, se construyeron dos herramientas reutilizables para volver a ejecutar estas pruebas sin depender de esta sesión:
 
-1. **`WebTIC.API.Tests`** (xUnit + `Microsoft.AspNetCore.Mvc.Testing`): 27 pruebas de integración reales que levantan la API completa contra una base de datos en memoria (no Supabase) y un servicio de correo falso (`FakeEmailService`), cubriendo los 66 casos documentados de forma consolidada y trazable por ID de caso (ver `Sprint1_AuthTests.cs`, `Sprint2_UserManagementTests.cs`, `Sprint3_AuditTests.cs`, `Sprint4_DashboardTests.cs`). Ejecutar con:
+1. **`WebTIC.API.Tests`** (xUnit + `Microsoft.AspNetCore.Mvc.Testing`): 28 pruebas de integración reales que levantan la API completa contra una base de datos en memoria (no Supabase) y un servicio de correo falso (`FakeEmailService`), cubriendo los 66 casos documentados de forma consolidada y trazable por ID de caso (ver `Sprint1_AuthTests.cs`, `Sprint2_UserManagementTests.cs`, `Sprint3_AuditTests.cs`, `Sprint4_DashboardTests.cs`). Incluye pruebas específicas para cada corrección (blacklist de tokens, auditoría de TOGGLE_STATUS, CSV/filtros, serie de actividad). Ejecutar con:
    ```
    dotnet test WebTIC.API.Tests
    ```
 2. **Colección de Postman** (`postman/WebTIC-Pruebas-Funcionales.postman_collection.json` + `postman/WebTIC-Local.postman_environment.json`): 39 requests organizados en 5 carpetas (Sprint 1-4 + Seguridad OWASP) con scripts de test automáticos (`pm.test`), replicando el enfoque de caja negra vía Postman descrito en la tesis (sección 3.2.1). Requiere el backend real corriendo en `localhost:5080`; los flujos con 2FA necesitan pegar manualmente el código de 6 dígitos (revisado en el log de consola o el correo real) en la variable `twoFactorCode`.
 
+## Correcciones y funcionalidades agregadas (segunda pasada, 2026-07-11)
+
+Todos los hallazgos de código de la primera pasada fueron corregidos y verificados con `dotnet test WebTIC.API.Tests` (28/28 en verde) y con builds limpios de backend y frontend:
+
+| # | Cambio | Archivos principales |
+|---|---|---|
+| 1 | `AuthGuard` + `roleGuard` en rutas `/admin/*` (CP1-12) | `core/guards/auth.guard.ts`, `core/guards/role.guard.ts`, `app.routes.ts` |
+| 2 | Blacklist de tokens: tabla `RevokedTokens`, `POST /api/auth/logout`, validación en `OnTokenValidated` (CP1-13) | `Models/RevokedToken.cs`, `Controllers/AuthController.cs`, `Program.cs`, `auth.service.ts`, migración `AddRevokedTokens` |
+| 3 | Auditoría del toggle activar/desactivar cuenta (CP2-11) | `Controllers/UsuariosController.cs` |
+| 4 | Ocultar página de Usuarios para roles no-admin (CP2-17) | `dashboard.component.html`, `user-list.component.ts/html`, `app.routes.ts` |
+| 5 | Fix del patrón N+1 en el dashboard (Sprint 4) | `Controllers/DashboardController.cs` |
+| 6 | Exportación CSV y filtros en auditoría (Sprint 3, Fig. 2.12) | `Controllers/AuditController.cs`, `audit.service.ts`, `audit-log.component.ts/html/css` |
+| 7 | Gráfica real de actividad en el dashboard (Sprint 4, Fig. 2.14) | `Controllers/DashboardController.cs`, `dashboard.service.ts`, `shared/components/activity-chart/*`, `dashboard-home.component.ts/html/css` |
+| 8 | Rechazo explícito (HTTP 400) al intentar modificar el correo institucional (CP2-08) | `Models/DTOs/UserDTOs.cs`, `Controllers/UsuariosController.cs` |
+
+La migración `AddRevokedTokens` ya fue aplicada a la base de datos Supabase real (solo agrega una tabla nueva, no modifica tablas existentes).
+
 ## Pendiente
 
-- [ ] Capturas de pantalla reales para los 66 casos (bloqueado temporalmente por inestabilidad de la herramienta de automatización de navegador en esta sesión — no es un problema del sistema bajo prueba). El usuario continuará esta parte manualmente.
-- [ ] Decidir si corregir el código real para los gaps encontrados (AuthGuard de rutas, blacklist de tokens, auditoría de activar/desactivar, N+1 del dashboard) o documentarlos como limitaciones conocidas en la tesis.
-- [ ] Generar una nueva contraseña de aplicación de Gmail para que el envío real de correos vuelva a funcionar.
+- [ ] Capturas de pantalla reales para los 66 casos, incluyendo las pantallas nuevas (guards redirigiendo, filtros/CSV de auditoría, gráfica del dashboard) — bloqueado temporalmente por inestabilidad de la herramienta de automatización de navegador en esta sesión, no es un problema del sistema bajo prueba. El usuario continuará esta parte manualmente.
+- [ ] Corregir en el texto de la tesis (no en el código) las afirmaciones de la sección "Discrepancias entre la tesis y el código real" que siguen pendientes (SQL Server → PostgreSQL, bloqueo 15 min → permanente, token 24h → 2 min, CP2-10 con dos significados distintos).
+- [ ] Generar una nueva contraseña de aplicación de Gmail para que el envío real de correos (2FA, recuperación, credenciales de nuevos usuarios) vuelva a funcionar — el try/catch agregado evita que esto tumbe los flujos con 500, pero el correo real sigue sin enviarse hasta que se resuelva esto.

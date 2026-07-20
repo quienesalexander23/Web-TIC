@@ -14,22 +14,25 @@
   <div class="toolbar">
     <div class="search-box">
       <i class="search-icon">🔍</i>
-      <input type="text" placeholder="Buscar por nombre o correo...">
+      <input
+        type="text"
+        placeholder="Buscar por nombre o correo..."
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchInput($event)">
     </div>
-    
+
     <div class="filters">
-      <select class="filter-select">
-        <option>Todos los Roles</option>
-        <option>Admin</option>
-        <option>Docente</option>
-        <option>Presidente CPGIC</option>
-        <option>Miembro CPGIC</option>
+      <select class="filter-select" [(ngModel)]="selectedRole" (change)="onRoleFilterChange()">
+        <option value="">Todos los Roles</option>
+        @for (r of roles; track r.id) {
+          <option [value]="r.name">{{ r.name }}</option>
+        }
       </select>
-      
-      <select class="filter-select">
-        <option>Estado</option>
-        <option>Activo</option>
-        <option>Inactivo</option>
+
+      <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()">
+        <option value="">Estado</option>
+        <option value="true">Activo</option>
+        <option value="false">Inactivo</option>
       </select>
     </div>
   </div>
@@ -102,7 +105,23 @@
 
   <!-- Pagination -->
   <div class="pagination-container">
-    <span class="pagination-info">Mostrando usuarios</span>
+    <span class="pagination-info">
+      @if (totalItems > 0) {
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }}–{{ lastItemOnPage }} de {{ totalItems }} usuarios
+      } @else {
+        No hay usuarios que coincidan con los filtros
+      }
+    </span>
+
+    @if (totalPages > 1) {
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">‹ Anterior</button>
+        @for (page of getPageArray(); track page) {
+          <button class="page-btn" [class.active]="page === currentPage" (click)="onPageChange(page)">{{ page }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">Siguiente ›</button>
+      </div>
+    }
   </div>
 </div>
 

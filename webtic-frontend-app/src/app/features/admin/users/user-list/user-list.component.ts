@@ -1,23 +1,35 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserService, UsuarioDto, CreateUsuarioDto, UpdateUsuarioDto } from '../../../../core/services/user.service';
 import { RoleService, RoleDto } from '../../../../core/services/role.service';
 import { HasRoleDirective } from '../../../../shared/directives/has-role.directive';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HasRoleDirective],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasRoleDirective],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnDestroy {
 
   users: UsuarioDto[] = [];
   roles: RoleDto[] = [];
   loading = false;
   totalItems = 0;
+
+  // Búsqueda, filtros y paginación (CP2-04/05/06)
+  searchTerm = '';
+  selectedRole = '';
+  selectedStatus = ''; // '', 'true' (Activo), 'false' (Inactivo)
+  currentPage = 1;
+  pageSize = 10;
+  private searchSubject = new Subject<string>();
 
   // Modal State
   isModalOpen = false;
@@ -29,13 +41,23 @@ export class UserListComponent implements OnInit {
   constructor(
     private userService: UserService,
     private roleService: RoleService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastService,
+    private confirmDialogService: ConfirmDialogService
   ) {
     this.userForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@epn\.edu\.ec$/)]],
       role: ['', Validators.required]
+    });
+
+    this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.loadUsers();
     });
   }
 
@@ -44,9 +66,15 @@ export class UserListComponent implements OnInit {
     this.loadRoles();
   }
 
+  ngOnDestroy() {
+    this.searchSubject.complete();
+  }
+
   loadUsers() {
     this.loading = true;
-    this.userService.getUsers(1, 50).subscribe({
+    const isActive = this.selectedStatus === '' ? undefined : this.selectedStatus === 'true';
+
+    this.userService.getUsers(this.currentPage, this.pageSize, this.searchTerm || undefined, this.selectedRole || undefined, isActive).subscribe({
       next: (res) => {
         this.users = res.items;
         this.totalItems = res.totalItems;
@@ -64,6 +92,39 @@ export class UserListComponent implements OnInit {
       next: (res) => this.roles = res,
       error: (err) => console.error('Error fetching roles', err)
     });
+  }
+
+  onSearchInput(value: string) {
+    this.searchTerm = value;
+    this.searchSubject.next(value);
+  }
+
+  onRoleFilterChange() {
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onStatusFilterChange() {
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onPageChange(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalItems / this.pageSize));
+  }
+
+  get lastItemOnPage(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalItems);
+  }
+
+  getPageArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   openUserModal(user?: UsuarioDto) {
@@ -117,12 +178,12 @@ export class UserListComponent implements OnInit {
           this.loadUsers();
           this.closeModal();
           this.isSaving = false;
-          alert('Usuario actualizado exitosamente');
+          this.toastService.success('Usuario actualizado exitosamente.');
         },
         error: (err) => {
           console.error(err);
           this.isSaving = false;
-          alert('Error al actualizar usuario');
+          this.toastService.error(err.error?.message || 'Error al actualizar usuario.');
         }
       });
     } else {
@@ -137,39 +198,52 @@ export class UserListComponent implements OnInit {
           this.loadUsers();
           this.closeModal();
           this.isSaving = false;
-          alert('Usuario creado exitosamente. Se ha enviado un correo con las credenciales temporales.');
+          this.toastService.success('Usuario creado exitosamente. Se ha enviado un correo con las credenciales temporales.');
         },
         error: (err) => {
           console.error(err);
           this.isSaving = false;
-          const errorMsg = err.error?.message || 'Error al crear usuario';
-          alert(errorMsg);
+          this.toastService.error(err.error?.message || 'Error al crear usuario.');
         }
       });
     }
   }
 
-  toggleStatus(user: UsuarioDto) {
-    if (confirm(`¿Estás seguro de ${user.isActive ? 'desactivar' : 'activar'} a ${user.firstName} ${user.lastName}?`)) {
-      this.userService.toggleStatus(user.id).subscribe({
-        next: () => this.loadUsers(),
-        error: (err) => console.error(err)
-      });
-    }
+  async toggleStatus(user: UsuarioDto) {
+    const confirmed = await this.confirmDialogService.confirm(
+      `¿Estás seguro de ${user.isActive ? 'desactivar' : 'activar'} a ${user.firstName} ${user.lastName}?`,
+      { title: user.isActive ? 'Desactivar usuario' : 'Activar usuario', confirmText: user.isActive ? 'Desactivar' : 'Activar', variant: user.isActive ? 'danger' : 'default' }
+    );
+    if (!confirmed) return;
+
+    this.userService.toggleStatus(user.id).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.toastService.success(`Usuario ${user.isActive ? 'desactivado' : 'activado'} exitosamente.`);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.error('Error al cambiar el estado del usuario.');
+      }
+    });
   }
 
-  unlockUser(user: UsuarioDto) {
-    if (confirm(`¿Estás seguro de desbloquear a ${user.firstName} ${user.lastName}?`)) {
-      this.userService.unlockUser(user.id).subscribe({
-        next: () => {
-          alert('Usuario desbloqueado exitosamente. Se ha enviado un correo con instrucciones para restablecer su contraseña.');
-          this.loadUsers();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error al desbloquear usuario');
-        }
-      });
-    }
+  async unlockUser(user: UsuarioDto) {
+    const confirmed = await this.confirmDialogService.confirm(
+      `¿Estás seguro de desbloquear a ${user.firstName} ${user.lastName}?`,
+      { title: 'Desbloquear cuenta', confirmText: 'Desbloquear' }
+    );
+    if (!confirmed) return;
+
+    this.userService.unlockUser(user.id).subscribe({
+      next: () => {
+        this.toastService.success('Usuario desbloqueado exitosamente. Se ha enviado un correo con instrucciones para restablecer su contraseña.');
+        this.loadUsers();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastService.error('Error al desbloquear usuario.');
+      }
+    });
   }
 }

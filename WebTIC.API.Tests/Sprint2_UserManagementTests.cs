@@ -89,7 +89,7 @@ namespace WebTIC.API.Tests
             }
         }
 
-        [Fact(DisplayName = "CP2-07/CP2-08: edición de nombre exitosa; modificar correo se ignora silenciosamente (no HTTP 400 explícito)")]
+        [Fact(DisplayName = "CP2-07/CP2-08: edición de nombre exitosa; modificar correo es rechazado explícitamente con HTTP 400")]
         public async Task CP2_07_08_EdicionDeDatosYCorreoInmutable()
         {
             var adminToken = await LoginAndGetTokenAsync("admin.test@epn.edu.ec");
@@ -102,14 +102,19 @@ namespace WebTIC.API.Tests
                 new { firstName = "DocenteEditado", lastName = "Test", role = "Docente" }));
             Assert.Equal(HttpStatusCode.OK, edit.StatusCode);
 
-            // CP2-08 (hallazgo real): el DTO no tiene campo Email, por lo que un intento de
-            // cambiarlo no produce HTTP 400 — simplemente se ignora y la petición es 200.
+            // CP2-08: el correo institucional es inmutable. Intentar cambiarlo es
+            // rechazado explícitamente con HTTP 400, no ignorado silenciosamente.
             var editEmailAttempt = await _client.SendAsync(Authorized(HttpMethod.Put, $"/api/usuarios/{target.Id}", adminToken,
                 new { firstName = "DocenteEditado", lastName = "Test", role = "Docente", email = "otro@epn.edu.ec" }));
-            Assert.Equal(HttpStatusCode.OK, editEmailAttempt.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, editEmailAttempt.StatusCode);
 
             var refreshed = await userManager.FindByIdAsync(target.Id);
             Assert.Equal("docente.test@epn.edu.ec", refreshed!.Email); // el correo NO cambió
+
+            // Enviar el mismo correo actual (sin intento de cambio real) sí debe permitirse.
+            var editSameEmail = await _client.SendAsync(Authorized(HttpMethod.Put, $"/api/usuarios/{target.Id}", adminToken,
+                new { firstName = "DocenteEditado", lastName = "Test", role = "Docente", email = "docente.test@epn.edu.ec" }));
+            Assert.Equal(HttpStatusCode.OK, editSameEmail.StatusCode);
         }
 
         [Fact(DisplayName = "CP2-09/CP2-10: desactivar cuenta deniega login; reactivar y desbloquear la restauran")]

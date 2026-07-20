@@ -156,6 +156,14 @@ namespace WebTIC.API.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
+            // El correo institucional es inmutable: se rechaza explícitamente cualquier
+            // intento de modificarlo en vez de ignorarlo silenciosamente.
+            if (!string.IsNullOrWhiteSpace(dto.Email) &&
+                !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "El correo institucional no puede modificarse." });
+            }
+
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
 

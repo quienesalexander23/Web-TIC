@@ -93,7 +93,8 @@ namespace WebTIC.API.Tests
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-            Assert.Equal("Credenciales incorrectas", body.GetProperty("message").GetString());
+            Assert.Equal("Acceso Denegado", body.GetProperty("message").GetString());
+            Assert.Equal("Credenciales incorrectas.", body.GetProperty("description").GetString());
         }
 
         [Fact(DisplayName = "CP1-05: Dominio no institucional es rechazado también en backend")]
@@ -139,7 +140,8 @@ namespace WebTIC.API.Tests
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-            Assert.Contains("inactiva", body.GetProperty("message").GetString());
+            Assert.Equal("Cuenta Inactiva", body.GetProperty("message").GetString());
+            Assert.Contains("inactiva", body.GetProperty("description").GetString());
         }
 
         [Fact(DisplayName = "CP1-13 (corregido): tras logout explícito, el token queda revocado y HTTP 401 en peticiones posteriores")]

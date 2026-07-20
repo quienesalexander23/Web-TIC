@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RoleService, RoleDto, SystemPermission } from '../../../../core/services/role.service';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-role-management',
@@ -14,12 +15,12 @@ export class RoleManagementComponent implements OnInit {
   roles: RoleDto[] = [];
   activeRole: RoleDto | null = null;
   permissions: SystemPermission[] = [];
-  
+
   loadingRoles = false;
   loadingPermissions = false;
   saving = false;
 
-  constructor(private roleService: RoleService) {}
+  constructor(private roleService: RoleService, private toastService: ToastService) {}
 
   ngOnInit() {
     this.loadRoles();
@@ -85,12 +86,12 @@ export class RoleManagementComponent implements OnInit {
     this.roleService.savePermissions(this.activeRole.name, this.permissions).subscribe({
       next: () => {
         this.saving = false;
-        alert('Permisos guardados exitosamente.');
+        this.toastService.success('Permisos guardados exitosamente.');
       },
       error: (err) => {
         console.error(err);
         this.saving = false;
-        alert('Error al guardar permisos.');
+        this.toastService.error('Error al guardar permisos.');
       }
     });
   }
