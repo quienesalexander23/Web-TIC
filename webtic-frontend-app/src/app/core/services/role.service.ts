@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface SystemPermission {
   id: string;
@@ -22,7 +23,7 @@ export interface RoleDto {
   providedIn: 'root'
 })
 export class RoleService {
-  private apiUrl = '/api/RolePermissions';
+  private apiUrl = `${environment.apiUrl}/api/RolePermissions`;
 
   constructor(private http: HttpClient) { }
 

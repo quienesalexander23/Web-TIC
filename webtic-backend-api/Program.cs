@@ -6,10 +6,22 @@ using System.Text;
 using WebTIC.API.Data;
 using WebTIC.API.Models;
 
-// Cargar variables de entorno desde .env
-DotNetEnv.Env.Load();
+// Cargar variables de entorno desde .env (solo existe en desarrollo local; en
+// producción las variables las inyecta el host directamente).
+if (File.Exists(".env"))
+{
+    DotNetEnv.Env.Load();
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Render (y otros hosts) inyectan el puerto real vía la variable PORT en tiempo
+// de ejecución; Kestrel debe escuchar exactamente ahí, no en el 5080 de desarrollo.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -20,12 +32,18 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<WebTIC.API.Services.IEmailService, WebTIC.API.Services.EmailService>();
 builder.Services.AddScoped<WebTIC.API.Services.IAuditService, WebTIC.API.Services.AuditService>();
 
-// Configurar CORS
+// Configurar CORS: en producción el origen real (ej. https://webtic.vercel.app) se
+// define en la variable de entorno ALLOWED_ORIGINS (separado por comas); en
+// desarrollo local se mantiene el fallback a localhost.
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? new[] { "http://localhost:4200", "https://localhost:4200" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

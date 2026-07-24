@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ActivityByDay {
   date: string;
@@ -20,7 +21,7 @@ export interface DashboardStats {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = '/api/dashboard';
+  private apiUrl = `${environment.apiUrl}/api/dashboard`;
 
   constructor(private http: HttpClient) { }
 
