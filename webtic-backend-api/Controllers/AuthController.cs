@@ -184,7 +184,10 @@ namespace WebTIC.API.Controllers
                 ? DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime
                 : DateTime.UtcNow.AddHours(1);
 
-            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "Unknown";
+            // El claim "sub" se remapea automáticamente a ClaimTypes.NameIdentifier
+            // al validar el token (comportamiento por defecto de JwtSecurityTokenHandler),
+            // por eso se busca aquí y no por JwtRegisteredClaimNames.Sub.
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Unknown";
 
             // Revocar el token actual agregando su jti a la lista negra: cualquier
             // petición futura con este mismo token será rechazada (ver Program.cs,
