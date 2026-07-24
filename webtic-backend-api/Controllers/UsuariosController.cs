@@ -118,7 +118,8 @@ namespace WebTIC.API.Controllers
             }
 
             // Enviar la contraseña por correo electrónico
-            var loginLink = "http://localhost:4200/login";
+            var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:4200";
+            var loginLink = $"{frontendUrl}/login";
             var emailBody = $@"
                 <h2>Bienvenido a Web-TIC EPN</h2>
                 <p>Hola {user.FirstName} {user.LastName},</p>
@@ -218,7 +219,8 @@ namespace WebTIC.API.Controllers
             // 2. Generar Token para restablecer contraseña
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = Uri.EscapeDataString(token);
-            var resetLink = $"http://localhost:4200/reset-password?email={user.Email}&token={encodedToken}";
+            var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:4200";
+            var resetLink = $"{frontendUrl}/reset-password?email={user.Email}&token={encodedToken}";
 
             // 3. Enviar correo de recuperación
             var emailBody = $@"

@@ -217,7 +217,8 @@ namespace WebTIC.API.Controllers
 
             // Construimos la URL del Frontend para recuperar contraseña
             var encodedToken = Uri.EscapeDataString(token);
-            var resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
+            var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:4200";
+            var resetLink = $"{frontendUrl}/reset-password?email={model.Email}&token={encodedToken}";
 
             // MODO DESARROLLO: Imprimir link en consola por si falla el correo
             Console.WriteLine($"[DEV MODE] Enlace de recuperación para {user.Email}: {resetLink}");
