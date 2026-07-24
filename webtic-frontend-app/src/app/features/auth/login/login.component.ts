@@ -17,6 +17,7 @@ export class LoginComponent implements OnDestroy {
   loginForm: FormGroup;
   verifyForm: FormGroup;
   isLoading = false;
+  showPassword = false;
   errorMessage = '';
   successMessage = '';
   requires2FA = false;
@@ -85,6 +86,10 @@ export class LoginComponent implements OnDestroy {
 
   get passwordControl() {
     return this.loginForm.get('password');
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 
   get digits() {
