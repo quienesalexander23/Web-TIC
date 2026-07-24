@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://web-tic.onrender.com'
+  apiUrl: 'https://webtic-api-epn-aufugmfma5gzgehr.mexicocentral-01.azurewebsites.net'
 };
