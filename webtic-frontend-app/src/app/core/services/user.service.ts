@@ -70,10 +70,10 @@ export class UserService {
   }
 
   getMyProfile(): Observable<UsuarioDto> {
-    return this.http.get<UsuarioDto>('/api/profile/me');
+    return this.http.get<UsuarioDto>(`${environment.apiUrl}/api/profile/me`);
   }
 
   updateMyProfile(dto: { firstName: string, lastName: string }): Observable<any> {
-    return this.http.put('/api/profile/me', dto);
+    return this.http.put(`${environment.apiUrl}/api/profile/me`, dto);
   }
 }
