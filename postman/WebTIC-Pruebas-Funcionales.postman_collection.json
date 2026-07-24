@@ -519,15 +519,29 @@
       "name": "Pruebas de Seguridad (OWASP Top 10, sección 3.3.1 de la tesis)",
       "item": [
         {
-          "name": "CS-01 - Inyección SQL en campo de correo",
+          "name": "CS-01 - Inyección SQL clásica en campo de correo",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"' OR '1'='1\",\n  \"password\": \"Santodomingo23!!\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"x' OR '1'='1@epn.edu.ec\",\n  \"password\": \"Santodomingo23!!\"\n}" },
+            "description": "El payload termina en @epn.edu.ec a propósito para pasar la validación de dominio y llegar de verdad a la consulta parametrizada (EF Core / Identity). Debe dar 401, nunca 200 ni 500."
           },
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('CS-01: la inyección es rechazada, no hay 200/500', function () { pm.expect(pm.response.code).to.be.oneOf([400,401]); });"
+          ]}}]
+        },
+        {
+          "name": "CS-02 - Statement stacking (DROP TABLE) + verificación de integridad",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"x'; DROP TABLE \\\"Users\\\"; --@epn.edu.ec\",\n  \"password\": \"x\"\n}" },
+            "description": "Tras correr esto, vuelve a correr CP1-01 (login válido) o cualquier request de Sprint 1/2: si la tabla Users siguiera existiendo y respondiendo con normalidad, la inyección no tuvo ningún efecto."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-02: HTTP 401, no 500 (la tabla no fue afectada)', function () { pm.response.to.have.status(401); });"
           ]}}]
         },
         {
@@ -578,6 +592,24 @@
             "pm.test('CS-09: mensaje genérico sin revelar existencia del correo', function () {",
             "  pm.response.to.have.status(401);",
             "  pm.expect(pm.response.json().message).to.eql('Credenciales incorrectas');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "CS-10 - CORS: preflight desde origen no autorizado",
+          "request": {
+            "method": "OPTIONS",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [
+              { "key": "Origin", "value": "https://sitio-malicioso-cualquiera.com" },
+              { "key": "Access-Control-Request-Method", "value": "POST" },
+              { "key": "Access-Control-Request-Headers", "value": "content-type" }
+            ],
+            "description": "Postman no aplica la política CORS (eso lo hace el navegador), así que esta prueba solo verifica que el servidor NO devuelve el encabezado Access-Control-Allow-Origin para un origen no autorizado. Comparar contra el mismo request con Origin={{allowedFrontendOrigin}}, que sí debe traer el encabezado."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CS-10: sin Access-Control-Allow-Origin para origen no confiable', function () {",
+            "  pm.expect(pm.response.headers.has('Access-Control-Allow-Origin')).to.eql(false);",
             "});"
           ]}}]
         }
