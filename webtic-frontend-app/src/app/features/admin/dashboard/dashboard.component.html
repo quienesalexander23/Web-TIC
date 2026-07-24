@@ -19,7 +19,7 @@
       <a *appHasRole="['Administrador']" routerLink="/admin/roles" routerLinkActive="active" class="nav-item">
         <i class="icon-shield"></i> Roles
       </a>
-      <a *appHasRole="['Administrador']" routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
+      <a *appHasRole="['Administrador', 'Docente']" routerLink="/admin/audit" routerLinkActive="active" class="nav-item">
         <i class="icon-file-text"></i> Audit Log
       </a>
       <a *appHasRole="['Administrador']" routerLink="/admin/settings" routerLinkActive="active" class="nav-item">

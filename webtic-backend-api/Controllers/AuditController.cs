@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebTIC.API.Data;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,14 +13,37 @@ namespace WebTIC.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")] // Solo Administrador puede ver los logs
+    [Authorize] // El acceso granular real se valida por permiso (ver HasAuditReadPermissionAsync)
     public class AuditController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AuditController(AppDbContext context)
+        public AuditController(AppDbContext context, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
+            _roleManager = roleManager;
+        }
+
+        // Administrador siempre tiene acceso total. Para el resto de roles, el acceso
+        // de lectura a la auditoría depende del permiso granular configurado en
+        // Gestión de Roles y Permisos (módulo "Gestión de Usuarios", recurso
+        // "Registros de Auditoría"), no de un rol fijo hardcodeado.
+        private async Task<bool> HasAuditReadPermissionAsync()
+        {
+            if (User.IsInRole("Administrador")) return true;
+
+            var roleName = User.FindFirstValue(ClaimTypes.Role);
+            if (string.IsNullOrEmpty(roleName)) return false;
+
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null) return false;
+
+            return await _context.SystemPermissions.AnyAsync(p =>
+                p.RoleId == role.Id &&
+                p.ModuleName == "Gestión de Usuarios" &&
+                p.ResourceName == "Registros de Auditoría" &&
+                p.CanRead);
         }
 
         private IQueryable<Models.LogAuditoria> ApplyFilters(
@@ -50,6 +75,8 @@ namespace WebTIC.API.Controllers
             [FromQuery] DateTime? fromDate = null,
             [FromQuery] DateTime? toDate = null)
         {
+            if (!await HasAuditReadPermissionAsync()) return Forbid();
+
             var query = ApplyFilters(actionType, userId, fromDate, toDate);
             var totalItems = await query.CountAsync();
             var logs = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -70,6 +97,8 @@ namespace WebTIC.API.Controllers
         [HttpGet("action-types")]
         public async Task<IActionResult> GetActionTypes()
         {
+            if (!await HasAuditReadPermissionAsync()) return Forbid();
+
             var types = await _context.LogAuditoria
                 .Select(l => l.ActionType)
                 .Distinct()
@@ -89,6 +118,8 @@ namespace WebTIC.API.Controllers
             [FromQuery] DateTime? fromDate = null,
             [FromQuery] DateTime? toDate = null)
         {
+            if (!await HasAuditReadPermissionAsync()) return Forbid();
+
             const int maxRows = 5000;
             var logs = await ApplyFilters(actionType, userId, fromDate, toDate)
                 .Take(maxRows)

@@ -3,6 +3,10 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 const adminOnly = roleGuard(['Administrador']);
+// La auditoría permite Docente además de Administrador: el acceso real de lectura
+// lo decide el permiso granular del backend (ver AuditController.HasAuditReadPermissionAsync),
+// esta guarda solo evita que otros roles ni siquiera intenten cargar la pantalla.
+const auditAccess = roleGuard(['Administrador', 'Docente']);
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
@@ -18,7 +22,7 @@ export const routes: Routes = [
       { path: 'users', canActivate: [adminOnly], loadComponent: () => import('./features/admin/users/user-list/user-list.component').then(m => m.UserListComponent) },
       { path: 'roles', canActivate: [adminOnly], loadComponent: () => import('./features/admin/roles/role-management/role-management.component').then(m => m.RoleManagementComponent) },
       { path: 'profile', loadComponent: () => import('./features/admin/users/user-profile/user-profile.component').then(m => m.UserProfileComponent) },
-      { path: 'audit', canActivate: [adminOnly], loadComponent: () => import('./features/admin/audit/audit-log/audit-log.component').then(m => m.AuditLogComponent) },
+      { path: 'audit', canActivate: [auditAccess], loadComponent: () => import('./features/admin/audit/audit-log/audit-log.component').then(m => m.AuditLogComponent) },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
