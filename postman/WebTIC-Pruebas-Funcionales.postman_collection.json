@@ -1,15 +1,17 @@
 {
   "info": {
-    "name": "WebTIC - Pruebas Funcionales (66 casos, Sprints 1-4)",
-    "description": "Colección de Postman que replica los 66 casos de prueba documentados en Test_y_Validaciones/Pruebas_Funcionales. Cada request incluye el ID del caso (CP) en su nombre y descripción, y un script de test que valida el resultado esperado automáticamente. Variables requeridas: baseUrl (default http://localhost:5080).\n\nNota sobre 2FA: el login siempre requiere un código de 6 dígitos enviado por correo. En desarrollo, revisa el log de consola del backend (o tu bandeja de correo si el SMTP está configurado) y pega el código en la variable de colección `twoFactorCode` antes de correr el request de verify-2fa correspondiente.",
+    "name": "WebTIC - Pruebas Funcionales y de Seguridad (Sprints 1-4 + Roles/Perfil/Mock)",
+    "description": "Colección de Postman con los 66 casos documentados en Test_y_Validaciones/Pruebas_Funcionales, más las carpetas agregadas para cubrir todo lo construido en producción: Gestión de Roles y Permisos (HU-06), filtros/export de Auditoría, Perfil de Usuario, los módulos de demostración (Consultas y Reportes / Propuestas de TIC), pruebas de seguridad OWASP y el cierre de sesión con revocación real de token. Cada request incluye un script de test (pestaña 'Test Results' de Postman) que valida el resultado esperado automáticamente.\n\nCómo usarla:\n1. Importa esta colección y también los 2 archivos .postman_environment.json (Local y Producción).\n2. Selecciona el environment 'WebTIC - Producción (Azure)' arriba a la derecha en Postman, para que baseUrl apunte al backend real desplegado.\n3. Corre las carpetas en orden: Sprint 1 -> Sprint 2 -> Gestión de Roles y Permisos -> Sprint 3 -> Sprint 4 -> Perfil -> Módulos de Demostración -> Pruebas de Seguridad -> Cierre de Sesión (esta última SIEMPRE al final, porque revoca adminToken).\n4. Cada vez que un request de login (CP1-01, CP2-12/13, CP2-14a, CP2-15a) responda con requires2FA=true, revisa el correo real (o los Logs de Azure buscando la línea '[DEV MODE] Código 2FA para...') y pega el código de 6 dígitos en la variable de colección `twoFactorCode` antes de correr el 'Verificar 2FA' correspondiente. El código expira en 2 minutos.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:5080" },
     { "key": "adminEmail", "value": "admin.webtic@epn.edu.ec" },
-    { "key": "adminPassword", "value": "Santodomingo23!!" },
+    { "key": "adminPassword", "value": "SantoDomingo_23!!" },
     { "key": "docenteEmail", "value": "victor.velepucha@epn.edu.ec" },
-    { "key": "docentePassword", "value": "Santodomingo23!!" },
+    { "key": "docentePassword", "value": "SantoDomingo_23!!" },
+    { "key": "presidentePassword", "value": "SantoDomingo_23!!" },
+    { "key": "miembroPassword", "value": "SantoDomingo_23!!" },
     { "key": "presidenteEmail", "value": "presidente.cpgic@epn.edu.ec" },
     { "key": "miembroEmail", "value": "miembro.cpgic@epn.edu.ec" },
     { "key": "twoFactorCode", "value": "" },
@@ -19,7 +21,10 @@
     { "key": "miembroToken", "value": "" },
     { "key": "resetToken", "value": "" },
     { "key": "targetUserId", "value": "" },
-    { "key": "newUserEmail", "value": "postman.test@epn.edu.ec" }
+    { "key": "newUserEmail", "value": "postman.test@epn.edu.ec" },
+    { "key": "docentePermissionsOriginal", "value": "" },
+    { "key": "docentePermissionsConAuditoria", "value": "" },
+    { "key": "allowedFrontendOrigin", "value": "https://web-tic-eight.vercel.app" }
   ],
   "item": [
     {
@@ -145,25 +150,11 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"cuenta.inactiva@epn.edu.ec\",\n  \"password\": \"Santodomingo23!!\"\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"cuenta.inactiva@epn.edu.ec\",\n  \"password\": \"SantoDomingo_23!!\"\n}" },
             "description": "Requiere una cuenta previamente desactivada (ver Sprint 2, CP2-09) con este correo."
           },
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('CP1-10: HTTP 401 cuenta inactiva', function () { pm.response.to.have.status(401); });"
-          ]}}]
-        },
-        {
-          "name": "CP1-13 - Reutilizar token tras 'logout' del cliente (hallazgo real)",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=1",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-            "description": "El logout es solo del lado del cliente (borra sessionStorage). Este mismo token (adminToken) sigue funcionando aquí, demostrando que NO existe blacklist de tokens en el backend."
-          },
-          "event": [{ "listen": "test", "script": { "exec": [
-            "pm.test('CP1-13 (hallazgo real): el token sigue siendo válido, HTTP 200 en vez del 401 documentado originalmente', function () {",
-            "  pm.response.to.have.status(200);",
-            "});"
           ]}}]
         },
         {
@@ -377,10 +368,25 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/login",
             "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"password\": \"{{docentePassword}}\"\n}" },
-            "description": "Después del 2FA (ver CP1-01b, adaptar email/variable a docenteToken), usar docenteToken en 'CP2-13b - Acceso admin con token Docente'."
+            "description": "Revisa el correo/log del backend para el código 2FA y pégalo en twoFactorCode antes de correr 'CP2-12b - Verificar 2FA Docente'."
           },
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('CP2-12/13: HTTP 200 login docente inicia flujo 2FA', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-12b - Verificar 2FA Docente y obtener JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/verify-2fa",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{docenteEmail}}\",\n  \"code\": \"{{twoFactorCode}}\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-12b: JWT de Docente obtenido y guardado en docenteToken', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.collectionVariables.set('docenteToken', pm.response.json().token);",
+            "});"
           ]}}]
         },
         {
@@ -395,6 +401,34 @@
           ]}}]
         },
         {
+          "name": "CP2-14a - Login Presidente CPGIC",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{presidenteEmail}}\",\n  \"password\": \"{{presidentePassword}}\"\n}" },
+            "description": "Revisa el correo/log del backend para el código 2FA y pégalo en twoFactorCode antes de correr 'CP2-14b - Verificar 2FA Presidente'."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-14a: HTTP 200 login Presidente CPGIC inicia flujo 2FA', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-14b - Verificar 2FA Presidente y obtener JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/verify-2fa",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{presidenteEmail}}\",\n  \"code\": \"{{twoFactorCode}}\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-14b: JWT de Presidente CPGIC obtenido y guardado en presidenteToken', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.collectionVariables.set('presidenteToken', pm.response.json().token);",
+            "});"
+          ]}}]
+        },
+        {
           "name": "CP2-14 - Acceso admin con token Presidente CPGIC -> 403",
           "request": {
             "method": "GET",
@@ -403,6 +437,34 @@
           },
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('CP2-14: HTTP 403 Forbidden para Presidente CPGIC', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-15a - Login Miembro CPGIC",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{miembroEmail}}\",\n  \"password\": \"{{miembroPassword}}\"\n}" },
+            "description": "Revisa el correo/log del backend para el código 2FA y pégalo en twoFactorCode antes de correr 'CP2-15b - Verificar 2FA Miembro'."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-15a: HTTP 200 login Miembro CPGIC inicia flujo 2FA', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "CP2-15b - Verificar 2FA Miembro y obtener JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/verify-2fa",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{miembroEmail}}\",\n  \"code\": \"{{twoFactorCode}}\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('CP2-15b: JWT de Miembro CPGIC obtenido y guardado en miembroToken', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.collectionVariables.set('miembroToken', pm.response.json().token);",
+            "});"
           ]}}]
         },
         {
@@ -443,6 +505,98 @@
       ]
     },
     {
+      "name": "Gestión de Roles y Permisos (HU-06)",
+      "item": [
+        {
+          "name": "RP-01 - Listar roles del sistema",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/RolePermissions/roles",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-01: HTTP 200, lista de roles no vacía', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().length).to.be.above(0);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "RP-02 - Ver matriz de permisos de Docente",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/RolePermissions/Docente",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "El test guarda la matriz completa en docentePermissionsOriginal (para poder revertir después) y una copia con 'Registros de Auditoría' -> canRead=true en docentePermissionsConAuditoria, lista para usarse en RP-03."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-02: HTTP 200, incluye el recurso Registros de Auditoría', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const perms = pm.response.json();",
+            "  pm.collectionVariables.set('docentePermissionsOriginal', JSON.stringify(perms));",
+            "  const withAuditRead = perms.map(p => {",
+            "    if (p.moduleName === 'Gestión de Usuarios' && p.resourceName === 'Registros de Auditoría') {",
+            "      return { ...p, canRead: true };",
+            "    }",
+            "    return p;",
+            "  });",
+            "  pm.collectionVariables.set('docentePermissionsConAuditoria', JSON.stringify(withAuditRead));",
+            "  pm.expect(perms.some(p => p.resourceName === 'Registros de Auditoría')).to.be.true;",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "RP-03 - Otorgar a Docente lectura de auditoría",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/RolePermissions/Docente",
+            "body": { "mode": "raw", "raw": "{{docentePermissionsConAuditoria}}" },
+            "description": "Guarda la matriz completa de Docente con canRead=true en 'Registros de Auditoría'. Corre esto y luego 'RP-04' para comprobar que el permiso tiene efecto real."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-03: HTTP 200, permisos actualizados', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "RP-04 - Docente ahora SÍ puede leer auditoría",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }],
+            "description": "Requiere docenteToken (ver Sprint 2, CP2-12b). Antes de RP-03 esto daba 403; después de otorgar el permiso, debe dar 200."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-04: HTTP 200, el permiso granular tuvo efecto real', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "RP-05 - Revertir: quitar a Docente la lectura de auditoría",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/RolePermissions/Docente",
+            "body": { "mode": "raw", "raw": "{{docentePermissionsOriginal}}" },
+            "description": "Restaura la matriz de Docente a como estaba antes de RP-03 (buena práctica: dejar el sistema como lo encontraste)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-05: HTTP 200, permisos revertidos', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "RP-06 - Confirmar que Docente vuelve a estar bloqueado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=5",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('RP-06: HTTP 403, el permiso fue revocado de verdad', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        }
+      ]
+    },
+    {
       "name": "Sprint 3 - Auditoría",
       "item": [
         {
@@ -474,8 +628,64 @@
             "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=5",
             "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }]
           },
+          "description": "Por defecto Docente no tiene el permiso 'Registros de Auditoría -> Lectura' (ver carpeta 'Gestión de Roles y Permisos', RP-02..06, donde se demuestra que ese permiso es real y configurable).",
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('Sprint 3: HTTP 403 para rol no-Admin', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        },
+        {
+          "name": "Sprint 3 - Filtro por tipo de acción",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=20&actionType=LOGIN_2FA",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Filtro actionType: todos los items son LOGIN_2FA', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.response.json().items.forEach(i => pm.expect(i.actionType).to.eql('LOGIN_2FA'));",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "Sprint 3 - Filtro por rango de fechas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit?pageNumber=1&pageSize=20&fromDate=2026-01-01&toDate=2026-12-31",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Filtro por fecha: HTTP 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "Sprint 3 - Listado de tipos de acción disponibles",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit/action-types",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Alimenta el dropdown de filtro del frontend sin valores hardcodeados."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Action-types: HTTP 200, array no vacío', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().length).to.be.above(0);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "Sprint 3 - Exportar auditoría a CSV",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/audit/export",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Fig. 2.12 de la tesis. Revisa en la pestaña 'Body' de Postman que el contenido sea un CSV con encabezado Fecha,TipoDeAccion,UsuarioId,DireccionIP,Detalles."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Export CSV: HTTP 200 y content-type text/csv', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+            "});"
           ]}}]
         }
       ]
@@ -516,6 +726,91 @@
       ]
     },
     {
+      "name": "Perfil de Usuario",
+      "item": [
+        {
+          "name": "PF-01 - Ver mi propio perfil",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/profile/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Endpoint corregido durante esta sesión: tenía la ruta hardcodeada sin environment.apiUrl, lo que causaba 'Error al cargar el perfil' en producción."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('PF-01: HTTP 200, trae email y nombre', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const json = pm.response.json();",
+            "  pm.expect(json.email).to.not.be.empty;",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "PF-02 - Actualizar mi nombre/apellido",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/profile/me",
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Sistema\"\n}" },
+            "description": "Vuelve a poner los valores originales tras probar, para no dejar residuos."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('PF-02: HTTP 200, perfil actualizado', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "PF-03 - Sin token -> 401",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/profile/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('PF-03: HTTP 401 sin token', function () { pm.response.to.have.status(401); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Módulos de Demostración (Mock: Consultas y Reportes / Propuestas de TIC)",
+      "item": [
+        {
+          "name": "MK-01 - Consultas y Reportes (con permiso)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/mock/consultas-reportes",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Datos de ejemplo estáticos del módulo de Mercedes Martínez, usados solo para demostrar que el permiso granular gatea también módulos ajenos al propio."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('MK-01: HTTP 200 (Administrador siempre tiene acceso)', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "MK-02 - Propuestas de TIC (con permiso)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/mock/propuestas-tic",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Datos de ejemplo estáticos del módulo de Luz María Andrade."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('MK-02: HTTP 200 (Administrador siempre tiene acceso)', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "MK-03 - Docente sin permiso -> 403",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/mock/consultas-reportes",
+            "header": [{ "key": "Authorization", "value": "Bearer {{docenteToken}}" }],
+            "description": "Por defecto Docente no tiene CanRead en 'Consultas y Reportes -> Visor de Propuestas Aprobadas'. Repite el patrón de la carpeta 'Gestión de Roles y Permisos' (RP-02..06) si quieres demostrar que también aquí el permiso es real."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('MK-03: HTTP 403 sin el permiso otorgado', function () { pm.response.to.have.status(403); });"
+          ]}}]
+        }
+      ]
+    },
+    {
       "name": "Pruebas de Seguridad (OWASP Top 10, sección 3.3.1 de la tesis)",
       "item": [
         {
@@ -524,7 +819,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"x' OR '1'='1@epn.edu.ec\",\n  \"password\": \"Santodomingo23!!\"\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"x' OR '1'='1@epn.edu.ec\",\n  \"password\": \"SantoDomingo_23!!\"\n}" },
             "description": "El payload termina en @epn.edu.ec a propósito para pasar la validación de dominio y llegar de verdad a la consulta parametrizada (EF Core / Identity). Debe dar 401, nunca 200 ni 500."
           },
           "event": [{ "listen": "test", "script": { "exec": [
@@ -611,6 +906,47 @@
             "pm.test('CS-10: sin Access-Control-Allow-Origin para origen no confiable', function () {",
             "  pm.expect(pm.response.headers.has('Access-Control-Allow-Origin')).to.eql(false);",
             "});"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Cierre de Sesión y Revocación de Token (CORRE ESTO AL FINAL DE TODO)",
+      "item": [
+        {
+          "name": "LO-01 - adminToken funciona ANTES del logout",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Importante: esta carpeta revoca adminToken. Si la corres antes de terminar el resto de la colección, todo lo que use adminToken después empezará a fallar con 401. Corre esta carpeta al final, o vuelve a hacer login (CP1-01/CP1-01b) después si necesitas seguir probando."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('LO-01: token válido antes del logout, HTTP 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "LO-02 - Logout (revoca el token en el servidor)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/logout",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Extrae el jti del token actual y lo agrega a la tabla RevokedTokens (CP1-13)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('LO-02: logout exitoso, HTTP 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "LO-03 - Reutilizar el mismo token DESPUÉS del logout (CP1-13)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios?page=1&pageSize=1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "description": "Mismo token que en LO-01, pero ya revocado por LO-02. Debe rechazarse con 401 aunque su fecha de expiración (exp) todavía no haya llegado — así se demuestra la blacklist real (tabla RevokedTokens + validación en OnTokenValidated de Program.cs)."
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('LO-03 (CP1-13): token revocado, HTTP 401 aunque no haya expirado', function () { pm.response.to.have.status(401); });"
           ]}}]
         }
       ]
