@@ -1,0 +1,56 @@
+<div class="mock-container">
+
+  <div class="mock-banner">
+    <span>🧩</span>
+    <div>
+      <strong>Vista de demostración</strong>
+      <p>Módulo de Consultas y Reportes (desarrollado por Mercedes Martínez). Esta pantalla muestra datos de ejemplo estáticos; solo sirve para probar que el permiso "Consultas y Reportes → Visor de Propuestas Aprobadas" controla acceso real.</p>
+    </div>
+  </div>
+
+  <div class="header-section">
+    <h1>Propuestas TIC Aprobadas</h1>
+    <p class="subtitle">Listado de propuestas aprobadas por la CPGIC, con su estado de asignación</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando propuestas...</p>
+  </div>
+
+  <div *ngIf="accessDenied" class="alert alert-denied">
+    No tienes permiso para ver este módulo. Pídele a un Administrador que te lo habilite en Gestión de Roles y Permisos.
+  </div>
+
+  <div class="table-card glass-panel" *ngIf="!isLoading && !accessDenied">
+    <div class="table-header">
+      <button class="btn-secondary" disabled title="Solo demostración visual">⬇ Exportar PDF</button>
+      <button class="btn-secondary" disabled title="Solo demostración visual">⬇ Exportar Excel</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Proponente</th>
+          <th>Estudiante Asignado</th>
+          <th>Estado</th>
+          <th>Últ. Cambio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items">
+          <td>{{ item.titulo }}</td>
+          <td>{{ item.proponente }}</td>
+          <td>{{ item.estudianteAsignado || '—' }}</td>
+          <td>
+            <span class="badge" [ngClass]="{ 'badge-ok': item.estado === 'Asignado', 'badge-info': item.estado === 'Disponible' }">
+              {{ item.estado }}
+            </span>
+          </td>
+          <td>{{ item.fechaUltimoCambio }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

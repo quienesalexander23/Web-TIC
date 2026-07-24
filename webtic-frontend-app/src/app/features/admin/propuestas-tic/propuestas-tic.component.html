@@ -1,0 +1,54 @@
+<div class="mock-container">
+
+  <div class="mock-banner">
+    <span>🧩</span>
+    <div>
+      <strong>Vista de demostración</strong>
+      <p>Módulo Propuestas de TIC (desarrollado por Luz María Andrade). Esta pantalla muestra datos de ejemplo estáticos; solo sirve para probar que el permiso "Propuestas de TIC → Validación por CPGIC" controla acceso real.</p>
+    </div>
+  </div>
+
+  <div class="header-section">
+    <h1>Bandeja de Validación CPGIC</h1>
+    <p class="subtitle">Propuestas de TIC enviadas por los docentes, con su estado de revisión</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando propuestas...</p>
+  </div>
+
+  <div *ngIf="accessDenied" class="alert alert-denied">
+    No tienes permiso para ver este módulo. Pídele a un Administrador que te lo habilite en Gestión de Roles y Permisos.
+  </div>
+
+  <div class="table-card glass-panel" *ngIf="!isLoading && !accessDenied">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Docente Proponente</th>
+          <th>Estado</th>
+          <th>Fecha de Envío</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items">
+          <td>{{ item.titulo }}</td>
+          <td>{{ item.docenteProponente }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-ok': item.estado === 'Aprobado',
+              'badge-pending': item.estado === 'Pendiente',
+              'badge-rejected': item.estado === 'Rechazado'
+            }">
+              {{ item.estado }}
+            </span>
+          </td>
+          <td>{{ item.fechaEnvio }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

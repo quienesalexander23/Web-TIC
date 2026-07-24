@@ -23,6 +23,10 @@ export const routes: Routes = [
       { path: 'roles', canActivate: [adminOnly], loadComponent: () => import('./features/admin/roles/role-management/role-management.component').then(m => m.RoleManagementComponent) },
       { path: 'profile', loadComponent: () => import('./features/admin/users/user-profile/user-profile.component').then(m => m.UserProfileComponent) },
       { path: 'audit', canActivate: [auditAccess], loadComponent: () => import('./features/admin/audit/audit-log/audit-log.component').then(m => m.AuditLogComponent) },
+      // Vistas de demostración de los otros 2 módulos del proyecto (datos estáticos).
+      // Sin guarda de rol propia: el backend decide acceso real vía permiso granular.
+      { path: 'consultas-reportes', loadComponent: () => import('./features/admin/consultas-reportes/consultas-reportes.component').then(m => m.ConsultasReportesComponent) },
+      { path: 'propuestas-tic', loadComponent: () => import('./features/admin/propuestas-tic/propuestas-tic.component').then(m => m.PropuestasTicComponent) },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
